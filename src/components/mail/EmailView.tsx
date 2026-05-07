@@ -107,18 +107,18 @@ export function EmailView({ email }: { email: Email | null }) {
                       <Paperclip className="h-3 w-3" /> {email.attachments.length} attachment
                       {email.attachments.length > 1 ? "s" : ""}
                     </div>
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 max-w-[520px]">
                       {email.attachments.map((attachment) => (
                         <motion.div
                           key={attachment.name}
-                          className="glass-tile flex items-center gap-3 rounded-lg p-3"
+                          className="glass-tile flex items-center gap-2.5 rounded-md p-2"
                         >
-                          <div className="flex h-9 w-9 items-center justify-center rounded-md border border-white/[0.08] bg-white/[0.06] text-[10px] font-bold uppercase text-muted-foreground shadow-[inset_0_1px_0_oklch(1_0_0/0.08)]">
+                          <div className="flex h-7 w-7 items-center justify-center rounded border border-white/[0.1] bg-white/[0.08] text-[9px] font-bold uppercase text-muted-foreground shadow-[inset_0_1px_0_oklch(1_0_0/0.1)]">
                             {attachment.type}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-xs font-medium text-foreground">{attachment.name}</div>
-                            <div className="text-[11px] text-muted-foreground">{attachment.size}</div>
+                            <div className="truncate text-[11.5px] font-medium leading-4 text-foreground">{attachment.name}</div>
+                            <div className="text-[10px] leading-3 text-muted-foreground">{attachment.size}</div>
                           </div>
                         </motion.div>
                       ))}
