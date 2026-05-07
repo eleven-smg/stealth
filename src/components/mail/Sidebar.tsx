@@ -127,7 +127,7 @@ export function Sidebar({
         </div>
         {!collapsed && (
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold tracking-tight silver-text">STEALTH</span>
+            <span className="mail-preview-heading text-sm font-semibold tracking-tight silver-text">STEALTH</span>
             <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">mail protocol</span>
           </div>
         )}
@@ -152,7 +152,7 @@ export function Sidebar({
         )}
       >
         <Pencil className="h-4 w-4" />
-        {!collapsed && <span>Compose</span>}
+        {!collapsed && <span className="mail-preview-heading">Compose</span>}
         {!collapsed && (
           <span className="ml-auto rounded-md border border-white/10 bg-black/30 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
             Ctrl+N
@@ -164,7 +164,7 @@ export function Sidebar({
         {sections.map((section, sectionIndex) => (
           <div key={section.title ?? "mail"} className={sectionIndex === 0 ? "" : "mt-5"}>
             {section.title && !collapsed && (
-              <div className="mb-2 px-3 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="mail-preview-heading mb-2 px-3 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 {section.title}
               </div>
             )}
@@ -187,8 +187,8 @@ export function Sidebar({
         {!collapsed && (
           <>
             <div className="mt-6 mb-2 flex items-center justify-between px-3">
-              <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Folders</span>
-              <button 
+              <span className="mail-preview-heading text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Folders</span>
+              <button
                 onClick={() => setIsAddingFolder(true)}
                 className="rounded p-1 text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
               >
@@ -240,7 +240,7 @@ export function Sidebar({
                 const isCustomActive = customFolder === f.name;
                 return (
                   <li key={f.name}>
-                    <button 
+                    <button
                       onClick={() => onSelectCustomFolder?.(isCustomActive ? null : f.name)}
                       className={cn(
                         "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition hover:bg-white/[0.04] hover:text-foreground",
@@ -248,7 +248,7 @@ export function Sidebar({
                       )}
                     >
                       <Hash className="h-3.5 w-3.5" style={{ color: f.color }} />
-                      <span>{f.name}</span>
+                      <span className="mail-preview-heading">{f.name}</span>
                     </button>
                   </li>
                 );
@@ -322,7 +322,7 @@ function FolderButton({
       <Icon className="relative h-4 w-4 shrink-0" />
       {!collapsed && (
         <>
-          <span className="relative truncate">{item.label}</span>
+          <span className="mail-preview-heading relative truncate">{item.label}</span>
           {count !== undefined && count > 0 && (
             <span className="relative ml-auto text-[11px] tabular-nums text-muted-foreground">{count}</span>
           )}
