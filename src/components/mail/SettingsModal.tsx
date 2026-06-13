@@ -365,10 +365,11 @@ function SettingsToggle({
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
       <button
-        onClick={() => setChecked(!checked)}
+        onClick={() => onChange(!checked)}
+        aria-pressed={checked}
         className={cn(
           "relative h-6 w-11 rounded-full transition",
-          checked ? "bg-white/20" : "bg-white/10"
+          checked ? "bg-white/20" : "bg-white/10",
         )}
       >
         <span
