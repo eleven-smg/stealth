@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationsPanel } from "./NotificationsPanel";
+import type { MailFilters } from "./data";
 
 type TopbarProps = {
   onOpenPalette: () => void;
