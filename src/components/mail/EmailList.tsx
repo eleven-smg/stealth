@@ -17,11 +17,19 @@ export function EmailList({
   selectedId,
   onSelect,
   folder,
+  filters,
+  customFolder,
+  compact,
+  showAvatars,
 }: {
   emails: Email[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   folder: MailFolder;
+  filters: MailFilters;
+  customFolder?: string | null;
+  compact: boolean;
+  showAvatars: boolean;
 }) {
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const folderLabel = getFolderLabel(folder);
