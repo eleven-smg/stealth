@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { MemoryApiRepository } from "../../../src/server/api/memory-repository";
-import { quotePostage, submitPostage } from "../../../src/server/api/postage-service";
+import {
+  assertPostageParticipant,
+  getPostage,
+  quotePostage,
+  submitPostage,
+} from "../../../src/server/api/postage-service";
 
 const recipient = `G${"A".repeat(55)}`;
 const sender = `G${"B".repeat(55)}`;
@@ -74,5 +79,24 @@ describe("postage service", () => {
         sender,
       }),
     ).rejects.toMatchObject({ status: 422 });
+  });
+
+  it("limits postage reads to message participants", async () => {
+    const repository = new MemoryApiRepository();
+    const postage = await repository.setPostage({
+      amount: "100",
+      createdAt: "2026-06-14T12:00:00.000Z",
+      messageId: "a".repeat(64),
+      paymentHash: "b".repeat(64),
+      recipient,
+      sender,
+      status: "pending",
+    });
+
+    await expect(getPostage(repository, postage.messageId)).resolves.toEqual(postage);
+    expect(() => assertPostageParticipant(postage, sender)).not.toThrow();
+    expect(() => assertPostageParticipant(postage, `G${"C".repeat(55)}`)).toThrowError(
+      expect.objectContaining({ status: 403 }),
+    );
   });
 });

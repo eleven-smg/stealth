@@ -55,3 +55,17 @@ export async function submitPostage(
     status: "pending",
   });
 }
+
+export async function getPostage(repository: ApiRepository, messageId: string) {
+  const postage = await repository.getPostage(messageId);
+  if (!postage) {
+    throw new ApiError(404, "not_found", "Postage was not found");
+  }
+  return postage;
+}
+
+export function assertPostageParticipant(postage: Postage, actor: string) {
+  if (actor !== postage.sender && actor !== postage.recipient) {
+    throw new ApiError(403, "forbidden", "Only message participants can read this postage");
+  }
+}
