@@ -1,12 +1,5 @@
 import { useState, type ReactNode } from "react";
-import {
-  Activity,
-  BarChart3,
-  LayoutDashboard,
-  Mail,
-  Shield,
-  Users,
-} from "lucide-react";
+import { Activity, BarChart3, FileText, LayoutDashboard, Mail, Shield, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
   DashboardNavItem,
@@ -14,6 +7,7 @@ import type {
   DemoAdminDashboardProps,
   StatCard,
 } from "./types";
+import { TemplatePicker } from "./templates";
 
 // ─── Deterministic fake data ──────────────────────────────────────────────────
 
@@ -21,6 +15,7 @@ const NAV_ITEMS: DashboardNavItem[] = [
   { id: "overview", label: "Overview", description: "High-level demo system status" },
   { id: "accounts", label: "Accounts", description: "Demo Stellar accounts and balances" },
   { id: "mail", label: "Mail", description: "Demo mail fixtures and delivery states" },
+  { id: "templates", label: "Templates", description: "Pick message templates to populate drafts" },
   { id: "audit", label: "Audit", description: "Demo protocol event log" },
 ];
 
@@ -47,8 +42,16 @@ const MAIL_FIXTURES: { subject: string; status: string; folder: string }[] = [
 
 const AUDIT_EVENTS_FAKE: { action: string; actor: string; timestamp: string }[] = [
   { action: "Session started", actor: "demo-user-1", timestamp: "2026-06-16T09:00:00Z" },
-  { action: "Policy default changed to request", actor: "demo-user-1", timestamp: "2026-06-16T09:05:00Z" },
-  { action: "Sender approved: alice*stealth.xyz", actor: "demo-user-1", timestamp: "2026-06-16T09:10:00Z" },
+  {
+    action: "Policy default changed to request",
+    actor: "demo-user-1",
+    timestamp: "2026-06-16T09:05:00Z",
+  },
+  {
+    action: "Sender approved: alice*stealth.xyz",
+    actor: "demo-user-1",
+    timestamp: "2026-06-16T09:10:00Z",
+  },
   { action: "Postage refunded for msg_abc123", actor: "system", timestamp: "2026-06-16T09:12:00Z" },
 ];
 
@@ -58,6 +61,7 @@ const SECTION_ICON: Record<DashboardSection, React.ElementType> = {
   overview: LayoutDashboard,
   accounts: Users,
   mail: Mail,
+  templates: FileText,
   audit: Activity,
 };
 
@@ -144,12 +148,9 @@ function MailContent() {
                   <span
                     className={cn(
                       "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
-                      mail.status === "delivered" &&
-                        "bg-emerald-500/10 text-emerald-400",
-                      mail.status === "pending" &&
-                        "bg-amber-500/10 text-amber-400",
-                      mail.status === "held" &&
-                        "bg-rose-500/10 text-rose-400",
+                      mail.status === "delivered" && "bg-emerald-500/10 text-emerald-400",
+                      mail.status === "pending" && "bg-amber-500/10 text-amber-400",
+                      mail.status === "held" && "bg-rose-500/10 text-rose-400",
                     )}
                   >
                     {mail.status}
@@ -193,10 +194,15 @@ function AuditContent() {
   );
 }
 
+function TemplatesContent() {
+  return <TemplatePicker />;
+}
+
 const SECTION_CONTENT: Record<DashboardSection, () => ReactNode> = {
   overview: OverviewContent,
   accounts: AccountsContent,
   mail: MailContent,
+  templates: TemplatesContent,
   audit: AuditContent,
 };
 
@@ -263,14 +269,16 @@ export function DemoAdminDashboard({ className }: DemoAdminDashboardProps) {
       </nav>
 
       {/* ── Content region ── */}
-      <div className="flex-1 overflow-y-auto p-6" role="tabpanel" aria-label={`${activeSection} section`}>
+      <div
+        className="flex-1 overflow-y-auto p-6"
+        role="tabpanel"
+        aria-label={`${activeSection} section`}
+      >
         <div className="mx-auto max-w-4xl">
           {/* Section header */}
           <div className="mb-6 flex items-center gap-2">
             <Icon className="h-4 w-4 text-muted-foreground" />
-            <h3 className="text-sm font-semibold text-foreground capitalize">
-              {activeSection}
-            </h3>
+            <h3 className="text-sm font-semibold text-foreground capitalize">{activeSection}</h3>
           </div>
 
           <ContentComponent />
