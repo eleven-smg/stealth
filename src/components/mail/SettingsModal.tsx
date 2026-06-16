@@ -1,8 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, User, Palette, Bell, Keyboard, ShieldCheck } from "lucide-react";
+import { X, User, Palette, Bell, Keyboard, ShieldCheck, ClipboardList } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { UiPreferences } from "@/features/preferences";
+import { AuditLog } from "@/features/audit-log";
 
 const tabs = [
   { id: "account", label: "Account", icon: User },
@@ -10,6 +11,7 @@ const tabs = [
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "inbox", label: "Inbox control", icon: ShieldCheck },
   { id: "shortcuts", label: "Shortcuts", icon: Keyboard },
+  { id: "audit", label: "Audit log", icon: ClipboardList },
 ] as const;
 
 type Tab = (typeof tabs)[number]["id"];
@@ -45,7 +47,12 @@ export function SettingsModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="glass-strong fixed left-1/2 top-1/2 z-50 w-[min(680px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl"
+            className={cn(
+              "glass-strong fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl transition-all",
+              activeTab === "audit"
+                ? "w-[min(800px,calc(100vw-2rem))]"
+                : "w-[min(680px,calc(100vw-2rem))]",
+            )}
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
@@ -58,7 +65,7 @@ export function SettingsModal({
               </button>
             </div>
 
-            <div className="flex min-h-[400px]">
+            <div className={cn("flex", activeTab === "audit" ? "h-[520px]" : "min-h-[400px]")}>
               {/* Sidebar tabs */}
               <div className="w-48 border-r border-white/5 p-3">
                 <nav className="space-y-1">
@@ -85,7 +92,7 @@ export function SettingsModal({
               </div>
 
               {/* Content */}
-              <div className="flex-1 p-5">
+              <div className={cn("flex-1 p-5", activeTab === "audit" && "flex flex-col overflow-hidden")}>
                 {activeTab === "account" && <AccountSettings />}
                 {activeTab === "appearance" && (
                   <AppearanceSettings preferences={preferences} onChange={onChange} />
@@ -97,6 +104,7 @@ export function SettingsModal({
                   <InboxSettings preferences={preferences} onChange={onChange} />
                 )}
                 {activeTab === "shortcuts" && <ShortcutSettings />}
+                {activeTab === "audit" && <AuditLog />}
               </div>
             </div>
             <div className="flex items-center justify-between border-t border-white/5 px-5 py-3">
