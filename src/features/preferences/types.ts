@@ -1,6 +1,8 @@
 export type ThemePreference = "dark" | "light" | "system";
 export type UnknownSenderPolicy = "request" | "verified" | "block";
 
+export type ReceiptPreference = "auto" | "manual" | "never";
+
 export type UiPreferences = {
   theme: ThemePreference;
   compactMode: boolean;
@@ -12,17 +14,29 @@ export type UiPreferences = {
   minimumPostage: string;
   onboardingCompleted: boolean;
   receiptOnDelivery: boolean;
+  receipts: {
+    trusted: ReceiptPreference;
+    unknown: ReceiptPreference;
+    paid: ReceiptPreference;
+    organizations: ReceiptPreference;
+  };
 };
 
 export const defaultPreferences: UiPreferences = {
   theme: "dark",
   compactMode: false,
   showAvatars: true,
+  receiptOnDelivery: false,
   emailNotifications: true,
   desktopNotifications: true,
   sound: false,
   unknownSenders: "request",
   minimumPostage: "0.0001",
   onboardingCompleted: false,
-  receiptOnDelivery: false,
+  receipts: {
+    trusted: "auto",
+    unknown: "manual",
+    paid: "manual",
+    organizations: "auto",
+  },
 };

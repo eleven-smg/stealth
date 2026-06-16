@@ -1,15 +1,39 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, User, Palette, Bell, Keyboard, ShieldCheck } from "lucide-react";
+import { X, User, Palette, Bell, Keyboard, ShieldCheck, CheckCheck } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import type { UiPreferences, ReceiptPreference } from "@/features/preferences";
+import {
+  X,
+  User,
+  Palette,
+  Bell,
+  Keyboard,
+  ShieldCheck,
+  Lock,
+  Laptop,
+  Key,
+  RefreshCw,
+  Copy,
+  Trash2,
+  Edit,
+  Check,
+  AlertTriangle,
+} from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { UiPreferences } from "@/features/preferences";
+import { AuditLog } from "@/features/audit-log";
 
 const tabs = [
   { id: "account", label: "Account", icon: User },
   { id: "appearance", label: "Appearance", icon: Palette },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "inbox", label: "Inbox control", icon: ShieldCheck },
+  { id: "receipts", label: "Read receipts", icon: CheckCheck },
+  { id: "security", label: "Security", icon: Lock },
   { id: "shortcuts", label: "Shortcuts", icon: Keyboard },
+  { id: "audit", label: "Audit log", icon: ClipboardList },
 ] as const;
 
 type Tab = (typeof tabs)[number]["id"];
@@ -45,7 +69,12 @@ export function SettingsModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="glass-strong fixed left-1/2 top-1/2 z-50 w-[min(680px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl"
+            className={cn(
+              "glass-strong fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl transition-all",
+              activeTab === "audit"
+                ? "w-[min(800px,calc(100vw-2rem))]"
+                : "w-[min(680px,calc(100vw-2rem))]",
+            )}
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
@@ -58,7 +87,7 @@ export function SettingsModal({
               </button>
             </div>
 
-            <div className="flex min-h-[400px]">
+            <div className={cn("flex", activeTab === "audit" ? "h-[520px]" : "min-h-[400px]")}>
               {/* Sidebar tabs */}
               <div className="w-48 border-r border-white/5 p-3">
                 <nav className="space-y-1">
@@ -85,7 +114,7 @@ export function SettingsModal({
               </div>
 
               {/* Content */}
-              <div className="flex-1 p-5">
+              <div className="flex-1 p-5 max-h-[450px] overflow-y-auto">
                 {activeTab === "account" && <AccountSettings />}
                 {activeTab === "appearance" && (
                   <AppearanceSettings preferences={preferences} onChange={onChange} />
@@ -96,7 +125,12 @@ export function SettingsModal({
                 {activeTab === "inbox" && (
                   <InboxSettings preferences={preferences} onChange={onChange} />
                 )}
+                {activeTab === "receipts" && (
+                  <ReceiptSettings preferences={preferences} onChange={onChange} />
+                )}
+                {activeTab === "security" && <SecuritySettings />}
                 {activeTab === "shortcuts" && <ShortcutSettings />}
+                {activeTab === "audit" && <AuditLog />}
               </div>
             </div>
             <div className="flex items-center justify-between border-t border-white/5 px-5 py-3">
@@ -301,6 +335,79 @@ function InboxSettings({
   );
 }
 
+function ReceiptSettings({
+  preferences,
+  onChange,
+}: {
+  preferences: UiPreferences;
+  onChange: (preferences: UiPreferences) => void;
+}) {
+  const setReceipt = (type: keyof UiPreferences["receipts"], value: ReceiptPreference) => {
+    onChange({
+      ...preferences,
+      receipts: {
+        ...preferences.receipts,
+        [type]: value,
+      },
+    });
+  };
+
+  const receiptOptions: {
+    value: ReceiptPreference;
+    label: string;
+    description: string;
+  }[] = [
+    { value: "auto", label: "Automatic", description: "Send read receipt as soon as you open the message." },
+    { value: "manual", label: "Manual", description: "Ask before sending a read receipt." },
+    { value: "never", label: "Never", description: "Never send read receipts for this sender type." },
+  ];
+
+  const senderTypes = [
+    { key: "trusted" as const, label: "Trusted contacts", help: "Senders you've approved or added." },
+    { key: "unknown" as const, label: "Unknown senders", help: "Senders who haven't been verified or approved." },
+    { key: "paid" as const, label: "Paid requests", help: "Senders who paid postage to reach you." },
+    { key: "organizations" as const, label: "Organizations", help: "Verified organizations and businesses." },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-sm font-medium text-foreground">Read receipt settings</h3>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Control when read receipts are sent. You decide what senders see.
+        </p>
+      </div>
+      <div className="space-y-4">
+        {senderTypes.map((type) => (
+          <div key={type.key} className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-foreground">{type.label}</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground">{type.help}</p>
+            <div className="mt-2 flex gap-2">
+              {receiptOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setReceipt(type.key, opt.value)}
+                  className={cn(
+                    "flex-1 rounded-lg border px-3 py-2 text-left transition",
+                    preferences.receipts[type.key] === opt.value
+                      ? "border-emerald-200/20 bg-emerald-200/[0.06]"
+                      : "border-white/10 bg-white/[0.025] hover:bg-white/[0.05]"
+                  )}
+                >
+                  <div className="text-[11px] font-medium text-foreground">{opt.label}</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">{opt.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ShortcutSettings() {
   const shortcuts = [
     { key: "⌘N", action: "Compose new email" },
@@ -343,6 +450,266 @@ function SettingsField({ label, value }: { label: string; value: string }) {
         defaultValue={value}
         className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-foreground focus:border-white/20 focus:outline-none"
       />
+    </div>
+  );
+}
+
+function SecuritySettings() {
+  const [confirmDialog, setConfirmDialog] = useState<{
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  } | null>(null);
+  const [copiedKey, setCopiedKey] = useState(false);
+  const [editingDevice, setEditingDevice] = useState<string | null>(null);
+  const [deviceName, setDeviceName] = useState("");
+
+  const sessions = [
+    {
+      id: "1",
+      device: "Current session - MacBook Air",
+      location: "San Francisco, CA",
+      lastActive: "Just now",
+      isCurrent: true,
+    },
+    {
+      id: "2",
+      device: "iPhone 15 Pro",
+      location: "San Francisco, CA",
+      lastActive: "2 hours ago",
+      isCurrent: false,
+    },
+  ];
+
+  const devices = [
+    { id: "1", name: "MacBook Air", type: "Desktop", lastActive: "Just now", trusted: true },
+    { id: "2", name: "iPhone 15 Pro", type: "Mobile", lastActive: "2 hours ago", trusted: true },
+  ];
+
+  const handleCopyKey = () => {
+    navigator.clipboard.writeText("GDQJMSGKJGQ2X576L33OY4JFDZ7NJG5OJ3LJ44V33PUPU7D5Q5X4KJ");
+    setCopiedKey(true);
+    setTimeout(() => setCopiedKey(false), 2000);
+  };
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h3 className="text-sm font-medium text-foreground">Security</h3>
+        <p className="mt-1 text-xs text-muted-foreground">Manage sessions, devices, and recovery</p>
+      </div>
+
+      {/* Active Sessions */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">Active sessions</p>
+            <p className="text-xs text-muted-foreground">
+              Sessions currently signed in to your account
+            </p>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {sessions.map((session) => (
+            <div
+              key={session.id}
+              className="flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.02] p-3"
+            >
+              <div className="flex items-center gap-3">
+                <Laptop className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-foreground">{session.device}</p>
+                    {session.isCurrent && (
+                      <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+                        Current
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {session.location} • {session.lastActive}
+                  </p>
+                </div>
+              </div>
+              {!session.isCurrent && (
+                <button
+                  onClick={() =>
+                    setConfirmDialog({
+                      title: "Revoke session?",
+                      description: "This will sign out this device from your account.",
+                      onConfirm: () => setConfirmDialog(null),
+                    })
+                  }
+                  className="rounded-lg px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition"
+                >
+                  Revoke
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Trusted Devices */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">Trusted devices</p>
+            <p className="text-xs text-muted-foreground">
+              Devices that can access your account without extra verification
+            </p>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {devices.map((device) => (
+            <div
+              key={device.id}
+              className="flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.02] p-3"
+            >
+              <div className="flex items-center gap-3">
+                <Laptop className="h-4 w-4 text-muted-foreground" />
+                {editingDevice === device.id ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      value={deviceName}
+                      onChange={(e) => setDeviceName(e.target.value)}
+                      className="rounded border border-white/10 bg-white/[0.04] px-2 py-1 text-sm text-foreground outline-none focus:border-white/20"
+                    />
+                    <button
+                      onClick={() => setEditingDevice(null)}
+                      className="rounded p-1 text-emerald-400 hover:bg-emerald-500/10"
+                    >
+                      <Check className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-sm text-foreground">{device.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {device.type} • {device.lastActive}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {!editingDevice && (
+                <button
+                  onClick={() => {
+                    setDeviceName(device.name);
+                    setEditingDevice(device.id);
+                  }}
+                  className="rounded-lg p-1.5 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition"
+                >
+                  <Edit className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recovery */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">Account recovery</p>
+            <p className="text-xs text-muted-foreground">
+              Backup access to your account if you lose your keys
+            </p>
+          </div>
+        </div>
+        <div className="rounded-lg border border-white/5 bg-white/[0.02] p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-emerald-400" />
+              <p className="text-xs font-medium text-foreground">Recovery enabled</p>
+            </div>
+            <span className="text-xs text-muted-foreground">Last updated 3 days ago</span>
+          </div>
+          <button className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-foreground hover:bg-white/[0.06] transition">
+            Export recovery checklist
+          </button>
+        </div>
+      </div>
+
+      {/* Keys */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">Signing keys</p>
+            <p className="text-xs text-muted-foreground">Your public key for verifying messages</p>
+          </div>
+        </div>
+        <div className="rounded-lg border border-white/5 bg-white/[0.02] p-4 space-y-3">
+          <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2">
+            <code className="text-[10px] text-muted-foreground truncate">
+              GDQJMSGKJGQ2X576L33OY4JFDZ7NJG5OJ3LJ44V33PUPU7D5Q5X4KJ
+            </code>
+            <button
+              onClick={handleCopyKey}
+              className="ml-2 flex items-center gap-1 rounded px-2 py-1 text-[10px] text-muted-foreground hover:bg-white/[0.06] transition"
+            >
+              {copiedKey ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              {copiedKey ? "Copied" : "Copy"}
+            </button>
+          </div>
+          <button
+            onClick={() =>
+              setConfirmDialog({
+                title: "Rotate keys?",
+                description:
+                  "This will generate a new key pair. You'll need to update your recovery info.",
+                onConfirm: () => setConfirmDialog(null),
+              })
+            }
+            className="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-amber-400 hover:bg-amber-500/10 transition"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Rotate keys (roadmap)
+          </button>
+        </div>
+      </div>
+
+      {/* High-risk actions (roadmap) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">High-risk actions</p>
+            <p className="text-xs text-muted-foreground">
+              Extra confirmation for sensitive operations
+            </p>
+          </div>
+        </div>
+        <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4 opacity-50 pointer-events-none">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            <span>Coming soon</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Confirmation Dialog */}
+      {confirmDialog && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="glass-strong w-full max-w-sm rounded-2xl p-5 space-y-4">
+            <h4 className="text-sm font-medium text-foreground">{confirmDialog.title}</h4>
+            <p className="text-xs text-muted-foreground">{confirmDialog.description}</p>
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="flex-1 rounded-lg border border-white/10 px-4 py-2 text-xs text-foreground hover:bg-white/[0.06] transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDialog.onConfirm}
+                className="flex-1 rounded-lg bg-red-500 px-4 py-2 text-xs font-medium text-white hover:bg-red-600 transition"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
