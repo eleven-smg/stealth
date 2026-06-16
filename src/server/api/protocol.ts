@@ -5,7 +5,7 @@ export const protocolManifest = {
     // mandatory caps that must be present in any peer
     "mailbox-policy",
     "sender-rules",
-    "policy-evaluation"
+    "policy-evaluation",
   ],
   authentication: {
     actorHeader: "x-stealth-address",
