@@ -21,6 +21,24 @@ test.describe("search and filter", () => {
     await expect(page.getByRole("dialog")).toBeVisible();
   });
 
+  test("question mark opens the shortcut overlay", async ({ page }) => {
+    await page.keyboard.press("Shift+/");
+    await expect(page.getByRole("dialog", { name: "Keyboard shortcuts" })).toBeVisible();
+    await expect(page.getByPlaceholder("Search shortcuts, commands, or conflict notes…")).toBeVisible();
+  });
+
+  test("global shortcuts are ignored while typing in inputs", async ({ page }) => {
+    await page.keyboard.press("Control+n");
+    await expect(page.getByText("New message")).toBeVisible();
+
+    await page.getByPlaceholder("Write your message…").click();
+    await page.keyboard.press("Control+k");
+    await expect(page.getByRole("dialog", { name: "Command palette" })).not.toBeVisible();
+
+    await page.keyboard.press("Shift+/");
+    await expect(page.getByRole("dialog", { name: "Keyboard shortcuts" })).not.toBeVisible();
+  });
+
   test("filter dropdown toggles unread-only filter", async ({ page }) => {
     // Open filter panel
     await page.getByRole("button", { name: "Filter" }).click();

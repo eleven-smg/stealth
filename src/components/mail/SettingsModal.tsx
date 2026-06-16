@@ -21,6 +21,7 @@ import {
 import { useState, type CSSProperties } from "react";
 import { Surface } from "@/features/design-system";
 import { cn } from "@/lib/utils";
+import { SHORTCUT_DEFINITIONS } from "@/features/command-palette";
 import type { ReceiptPreference, UiPreferences } from "@/features/preferences";
 import { AuditLog } from "@/features/audit-log";
 
@@ -580,32 +581,35 @@ function ReceiptSettings({
 }
 
 function ShortcutSettings() {
-  const shortcuts = [
-    { key: "⌘N", action: "Compose new email" },
-    { key: "⌘K", action: "Open command palette" },
-    { key: "E", action: "Archive thread" },
-    { key: "G I", action: "Go to Inbox" },
-    { key: "G S", action: "Go to Starred" },
-    { key: "G T", action: "Go to Sent" },
-    { key: "Esc", action: "Close modal" },
-  ];
-
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-sm font-medium text-foreground">Keyboard Shortcuts</h3>
-        <p className="mt-1 text-xs text-muted-foreground">Quick actions for power users</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          The shortcut overlay opened with <span className="font-mono">?</span> is the canonical
+          reference. Shortcuts pause while you are typing in text fields.
+        </p>
       </div>
       <div className="space-y-2">
-        {shortcuts.map((s) => (
+        {SHORTCUT_DEFINITIONS.map((shortcut) => (
           <div
-            key={s.key}
+            key={shortcut.id}
             className="flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2"
           >
-            <span className="text-sm text-foreground">{s.action}</span>
-            <kbd className="rounded border border-white/10 bg-black/30 px-2 py-1 font-mono text-[11px] text-muted-foreground">
-              {s.key}
-            </kbd>
+            <div>
+              <span className="text-sm text-foreground">{shortcut.label}</span>
+              <div className="mt-0.5 text-[11px] text-muted-foreground">{shortcut.description}</div>
+            </div>
+            <div className="flex flex-wrap justify-end gap-1">
+              {shortcut.keys.map((key) => (
+                <kbd
+                  key={`${shortcut.id}-${key}`}
+                  className="rounded border border-white/10 bg-black/30 px-2 py-1 font-mono text-[11px] text-muted-foreground"
+                >
+                  {key}
+                </kbd>
+              ))}
+            </div>
           </div>
         ))}
       </div>

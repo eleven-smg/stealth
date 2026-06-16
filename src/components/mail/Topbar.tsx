@@ -5,6 +5,7 @@ import {
   Bell,
   Calendar,
   Check,
+  CircleHelp,
   Clock3,
   Command,
   Filter,
@@ -27,6 +28,7 @@ type TopbarProps = {
   onOpenSettings: () => void;
   onImportContacts: () => void;
   onShowToast: (message: string) => void;
+  onOpenShortcuts: () => void;
   filters: MailFilters;
   onFiltersChange: (filters: MailFilters) => void;
   onQuickAction: (action: "proofs" | "later" | "files") => void;
@@ -50,6 +52,7 @@ export function Topbar({
   onOpenSettings,
   onImportContacts,
   onShowToast,
+  onOpenShortcuts,
   filters,
   onFiltersChange,
   onQuickAction,
@@ -59,15 +62,18 @@ export function Topbar({
   const [focused, setFocused] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [account, setAccount] = useState<"personal" | "protocol">("personal");
 
   const filterRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
+  const helpRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
   const [filterRect, setFilterRect] = useState<DOMRect | null>(null);
   const [accountRect, setAccountRect] = useState<DOMRect | null>(null);
+  const [helpRect, setHelpRect] = useState<DOMRect | null>(null);
   const [notifRect, setNotifRect] = useState<DOMRect | null>(null);
 
   useLayoutEffect(() => {
@@ -78,6 +84,9 @@ export function Topbar({
       setAccountRect(accountRef.current.getBoundingClientRect());
   }, [accountOpen]);
   useLayoutEffect(() => {
+    if (helpOpen && helpRef.current) setHelpRect(helpRef.current.getBoundingClientRect());
+  }, [helpOpen]);
+  useLayoutEffect(() => {
     if (notificationsOpen && notificationsRef.current)
       setNotifRect(notificationsRef.current.getBoundingClientRect());
   }, [notificationsOpen]);
@@ -87,6 +96,7 @@ export function Topbar({
       if (filterOpen && filterRef.current) setFilterRect(filterRef.current.getBoundingClientRect());
       if (accountOpen && accountRef.current)
         setAccountRect(accountRef.current.getBoundingClientRect());
+      if (helpOpen && helpRef.current) setHelpRect(helpRef.current.getBoundingClientRect());
       if (notificationsOpen && notificationsRef.current)
         setNotifRect(notificationsRef.current.getBoundingClientRect());
     };
@@ -96,7 +106,7 @@ export function Topbar({
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onResize, true);
     };
-  }, [filterOpen, accountOpen, notificationsOpen]);
+  }, [filterOpen, accountOpen, helpOpen, notificationsOpen]);
 
   return (
     <header className="glass relative z-50 m-0 flex h-14 items-center gap-2 rounded-none border-t-0 px-3">
@@ -272,8 +282,59 @@ export function Topbar({
           <Upload className="h-4 w-4" />
         </IconBtn>
 
+        <div ref={helpRef} className="relative">
+          <IconBtn label="Help" onClick={() => setHelpOpen((open) => !open)} active={helpOpen} hint="?">
+            <CircleHelp className="h-4 w-4" />
+          </IconBtn>
+        </div>
+        {typeof document !== "undefined" &&
+          createPortal(
+            <AnimatePresence>
+              {helpOpen && (
+                <>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setHelpOpen(false)}
+                    className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-xl"
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 28 }}
+                    style={{
+                      position: "fixed",
+                      top: helpRect ? helpRect.bottom + 8 : 64,
+                      right: helpRect ? Math.max(8, window.innerWidth - helpRect.right) : 12,
+                      width: 260,
+                      zIndex: 110,
+                    }}
+                    className="glass-modal overflow-hidden rounded-xl p-1.5"
+                  >
+                    <button
+                      onClick={() => {
+                        setHelpOpen(false);
+                        onOpenShortcuts();
+                      }}
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground"
+                    >
+                      <CircleHelp className="h-4 w-4" />
+                      <span className="flex-1">Keyboard shortcuts</span>
+                      <kbd className="rounded border border-white/10 bg-black/30 px-1.5 py-0.5 font-mono text-[10px]">
+                        ?
+                      </kbd>
+                    </button>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>,
+            document.body,
+          )}
+
         {/* Settings */}
-        <IconBtn label="Settings" onClick={onOpenSettings}>
+        <IconBtn label="Settings" onClick={onOpenSettings} hint=",">
           <Settings className="h-4 w-4" />
         </IconBtn>
 
@@ -404,11 +465,13 @@ function IconBtn({
   label,
   onClick,
   active,
+  hint,
 }: {
   children: React.ReactNode;
   label: string;
   onClick?: () => void;
   active?: boolean;
+  hint?: string;
 }) {
   return (
     <motion.button
@@ -417,10 +480,16 @@ function IconBtn({
       onClick={onClick}
       className={cn(
         "rounded-[6px] p-2 text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground",
+        "inline-flex items-center gap-1.5",
         active && "bg-white/[0.06] text-foreground",
       )}
     >
       {children}
+      {hint && (
+        <span className="hidden rounded border border-white/10 bg-black/30 px-1 py-0.5 font-mono text-[10px] text-muted-foreground lg:inline">
+          {hint}
+        </span>
+      )}
     </motion.button>
   );
 }

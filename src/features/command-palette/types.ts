@@ -2,6 +2,7 @@ import {
   Archive,
   BadgeCheck,
   Ban,
+  CalendarDays,
   Coins,
   Inbox,
   Pencil,
@@ -21,7 +22,9 @@ export type CommandId =
   | "go-inbox"
   | "go-starred"
   | "go-sent"
+  | "open-calendar"
   | "open-settings"
+  | "open-shortcuts"
   | "archive-thread"
   | "approve-sender"
   | "block-sender"
@@ -209,6 +212,16 @@ export const COMMANDS: CommandDescriptor[] = [
     availability: () => OK,
   },
   {
+    id: "open-calendar",
+    group: "app",
+    label: "Open calendar",
+    description: "Review scheduled events and create new ones.",
+    icon: CalendarDays,
+    hint: "C",
+    keywords: ["events", "schedule", "meeting", "planner"],
+    availability: () => OK,
+  },
+  {
     id: "go-inbox",
     group: "navigation",
     label: "Go to Inbox",
@@ -246,6 +259,16 @@ export const COMMANDS: CommandDescriptor[] = [
     icon: Settings,
     hint: ",",
     keywords: ["preferences", "config", "options"],
+    availability: () => OK,
+  },
+  {
+    id: "open-shortcuts",
+    group: "app",
+    label: "Open keyboard shortcuts",
+    description: "Browse the searchable shortcut reference.",
+    icon: Settings,
+    hint: "?",
+    keywords: ["help", "keyboard", "overlay", "cheatsheet"],
     availability: () => OK,
   },
 ];

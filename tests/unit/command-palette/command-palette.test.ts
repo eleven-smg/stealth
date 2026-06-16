@@ -65,7 +65,14 @@ describe("buildCommands availability", () => {
       expect(a.get(id)?.help).toBeTruthy();
     }
     // Global commands stay enabled.
-    for (const id of ["compose", "go-inbox", "open-settings", "relay-diagnostics"] as CommandId[]) {
+    for (const id of [
+      "compose",
+      "open-calendar",
+      "open-settings",
+      "open-shortcuts",
+      "go-inbox",
+      "relay-diagnostics",
+    ] as CommandId[]) {
       expect(a.get(id)?.enabled).toBe(true);
     }
   });

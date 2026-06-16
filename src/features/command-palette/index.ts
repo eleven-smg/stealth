@@ -1,4 +1,5 @@
 export { CommandPalette } from "./CommandPalette";
+export { ShortcutOverlay } from "./ShortcutOverlay";
 export {
   COMMANDS,
   COMMAND_GROUP_LABEL,
@@ -18,3 +19,11 @@ export {
   type PaletteSection,
   type SettingShortcut,
 } from "./search";
+export {
+  SHORTCUT_DEFINITIONS,
+  SHORTCUTS_BY_COMMAND,
+  getShortcutAction,
+  isEditableTarget,
+  type ShortcutActionId,
+  type ShortcutDefinition,
+} from "./shortcuts";

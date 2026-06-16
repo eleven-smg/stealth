@@ -205,18 +205,20 @@ export function EmailView({
                     whileTap={{ scale: 0.9 }}
                     onClick={() => actions.onSnooze?.(email)}
                     title="Snooze"
-                    className="rounded-md p-2 text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground"
+                    className="inline-flex items-center gap-1.5 rounded-md p-2 text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground"
                   >
                     <Clock className="h-4 w-4" />
+                    <ShortcutKey hint="Z" />
                   </motion.button>
                 )}
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => actions.onArchive?.(email)}
                   title="Archive"
-                  className="rounded-md p-2 text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground"
+                  className="inline-flex items-center gap-1.5 rounded-md p-2 text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground"
                 >
                   <Archive className="h-4 w-4" />
+                  <ShortcutKey hint="E" />
                 </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
@@ -528,6 +530,14 @@ function buildInlineBody(email: Email, mode: ComposeMode) {
   if (mode === "forward")
     return `\n\n---------- Forwarded message ----------\nFrom: ${email.from} <${email.email}>\nSubject: ${email.subject}\n\n${email.body}`;
   return `\n\n${header}\n${quoted}`;
+}
+
+function ShortcutKey({ hint }: { hint: string }) {
+  return (
+    <span className="hidden rounded border border-white/10 bg-black/30 px-1 py-0.5 font-mono text-[10px] text-muted-foreground lg:inline">
+      {hint}
+    </span>
+  );
 }
 
 function getInlineSubject(subject: string, mode: ComposeMode) {
