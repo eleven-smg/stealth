@@ -31,6 +31,7 @@ type TopbarProps = {
   onFiltersChange: (filters: MailFilters) => void;
   onQuickAction: (action: "proofs" | "later" | "files") => void;
   onViewNotifications: () => void;
+  onSignOut?: () => void;
 };
 
 const quickActions: {
@@ -53,6 +54,7 @@ export function Topbar({
   onFiltersChange,
   onQuickAction,
   onViewNotifications,
+  onSignOut,
 }: TopbarProps) {
   const [focused, setFocused] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -368,6 +370,7 @@ export function Topbar({
                         onClick={() => {
                           setAccountOpen(false);
                           onShowToast("Signed out successfully");
+                          onSignOut?.();
                         }}
                       />
                     </div>

@@ -8,6 +8,8 @@ import { EmailView } from "@/components/mail/EmailView";
 import { Compose, type ComposeSubmission } from "@/components/mail/Compose";
 import { RightPanel, type ContextAction } from "@/components/mail/RightPanel";
 import { SettingsModal } from "@/components/mail/SettingsModal";
+import { LandingScreen } from "@/components/landing/LandingScreen";
+import { useFreighter } from "@/features/onboarding/useFreighter";
 import {
   defaultMailFilters,
   deriveProof,
@@ -53,10 +55,37 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  component: MailApp,
+  component: IndexPage,
 });
 
-function MailApp() {
+function IndexPage() {
+  const [authMode, setAuthMode] = useState<"logged-out" | "demo" | "authenticated">("logged-out");
+  const { state: freighterState, connect } = useFreighter();
+
+  const handleConnectWallet = async () => {
+    const address = await connect();
+    if (address) {
+      setAuthMode("authenticated");
+    } else if (freighterState.status === "error" || freighterState.status === "unavailable") {
+      // Fallback for demo purposes if wallet isn't available
+      // In a real app we might show a toast, but here we can just alert or force auth
+      alert("Wallet connection failed or unavailable. Please use demo mode for now.");
+    }
+  };
+
+  if (authMode === "logged-out") {
+    return (
+      <LandingScreen
+        onConnectWallet={handleConnectWallet}
+        onExploreDemo={() => setAuthMode("demo")}
+      />
+    );
+  }
+
+  return <MailApp isDemoMode={authMode === "demo"} onSignOut={() => setAuthMode("logged-out")} />;
+}
+
+function MailApp({ isDemoMode, onSignOut }: { isDemoMode?: boolean; onSignOut?: () => void }) {
   const [folder, setFolder] = useState<MailFolder>("inbox");
   const [emails, setEmails] = useState<Email[]>(initialEmails);
   const [selectedId, setSelectedId] = useState<string | null>(initialEmails[0].id);
@@ -81,14 +110,9 @@ function MailApp() {
 
   // Gate: show onboarding only after localStorage has been read (hydrated) and only
   // when it has not been completed in a previous session.
-  const showOnboarding = hydrated && !preferences.onboardingCompleted;
+  // In demo mode, we might want to skip onboarding or mock it.
+  const showOnboarding = hydrated && !preferences.onboardingCompleted && !isDemoMode;
 
-  /**
-   * Called by OnboardingModal once all 7 steps are complete.
-   * 1. Submits the mailbox policy to the protocol API.
-   * 2. Merges the draft into local UiPreferences so Settings reflects the same values.
-   * Errors propagate back to PolicyReviewStep for inline display (no silent swallow).
-   */
   const handleOnboardingComplete = useCallback(
     async (walletAddress: string, draft: OnboardingDraft) => {
       const policy = draftToMailboxPolicy(draft);
@@ -338,6 +362,11 @@ function MailApp() {
   return (
     <div className="relative min-h-screen text-foreground">
       <AmbientBackground />
+      {isDemoMode && (
+        <div className="absolute top-0 inset-x-0 z-50 bg-primary/20 backdrop-blur-md border-b border-primary/30 py-1 text-center text-xs font-medium text-primary shadow-sm pointer-events-none">
+          Demo Mode: Showing placeholder data.
+        </div>
+      )}
 
       <div className="flex min-h-screen">
         <Sidebar
@@ -360,6 +389,7 @@ function MailApp() {
             onOpenSettings={() => setSettingsOpen(true)}
             onImportContacts={() => setImportOpen(true)}
             onShowToast={showToast}
+            onSignOut={onSignOut}
             filters={filters}
             onFiltersChange={setFilters}
             onQuickAction={(action) => {
