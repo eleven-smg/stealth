@@ -65,6 +65,8 @@ export type Email = {
   senderPolicy?: SenderPolicy;
   receiptState?: ReceiptState;
   snooze?: SnoozeState;
+  postageAmount?: string;
+  verifiedSender?: boolean;
 };
 
 export type MailFilters = {
@@ -266,6 +268,40 @@ export const emails: Email[] = [
     folder: "requests",
     labels: ["Request", "Paid"],
     avatarColor: c(4),
+    postageAmount: "10000000",
+    verifiedSender: false,
+  },
+  {
+    id: "5-b",
+    from: "Stellar Fund",
+    email: "GD7K...J4W2",
+    subject: "Grant application review",
+    preview: "We've completed the initial screening of your GrantFox application...",
+    body: "We've completed the initial screening of your GrantFox application and would like to proceed with the technical review.\n\nPlease approve this request so we can schedule the dev walkthrough and share the assessment criteria.",
+    time: "Yesterday",
+    unread: true,
+    starred: false,
+    folder: "requests",
+    labels: ["Request", "Grant", "Verified"],
+    avatarColor: c(1),
+    postageAmount: "50000000",
+    verifiedSender: true,
+  },
+  {
+    id: "5-c",
+    from: "Anonymous Trader",
+    email: "GB3S...P9A2",
+    subject: "OTC offer for STEALTH tokens",
+    preview: "I'm looking to buy 50k STEALTH tokens at $0.15...",
+    body: "I'm looking to buy 50k STEALTH tokens at $0.15. Can settle immediately via smart contract. Let me know if you have liquidity available.",
+    time: "Yesterday",
+    unread: true,
+    starred: false,
+    folder: "requests",
+    labels: ["Request", "Paid"],
+    avatarColor: c(3),
+    postageAmount: "15000000",
+    verifiedSender: false,
   },
   {
     id: "6",

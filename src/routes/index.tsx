@@ -61,6 +61,7 @@ import {
 } from "@/features/snooze";
 import type { SnoozeState } from "@/components/mail/data";
 import { useIsMobile } from "@/lib/use-media-query";
+import { RequestsTriageBoard } from "@/features/requests";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -617,52 +618,62 @@ function MailApp({ isDemoMode }: { isDemoMode?: boolean }) {
             }}
           />
           <div className="flex min-w-0 flex-1">
-            <EmailList
-              emails={emails}
-              selectedId={selectedId}
-              selectedIds={selectedIds}
-              onSelect={setSelectedId}
-              onSelectionChange={setSelectedIds}
-              onBulkAction={handleBulkActionRequest}
-              bulkProgress={bulkProgress}
-              bulkFailures={bulkFailures}
-              onConvertSender={openSenderConversion}
-              folder={folder}
-              filters={filters}
-              customFolder={customFolder}
-              compact={preferences.compactMode}
-              showAvatars={preferences.showAvatars}
-              useMobile={isMobile}
-              onArchive={handleArchive}
-              onStar={handleStar}
-              onSnooze={handleMobileSnooze}
-            />
-            <EmailView email={selected} actions={emailActions} />
-            <RightPanel
-              email={selected}
-              onAction={handleContextAction}
-              onConvertSender={openSenderConversion}
-              onSnooze={openSnooze}
-              calendarEvents={calendar.visibleEvents}
-              calendars={calendar.calendars}
-              onShowToast={showToast}
-              onOpenCalendar={openCalendar}
-              onCreateEvent={() => {
-                setCalendarEventId(null);
-                setCalendarOpen(true);
-                setCalendarCreateRequest((request) => request + 1);
-              }}
-              onDraftReply={(email, prompt) =>
-                openCompose({
-                  to: email.email,
-                  subject: email.subject.startsWith("Re: ")
-                    ? email.subject
-                    : `Re: ${email.subject}`,
-                  body: `${prompt}\n\nDrafted response:\nThanks for the note. I reviewed the context and will follow up with the next step shortly.${quoteBody(email)}`,
-                })
-              }
-              onPreviewAttachment={(attachment) => setPreviewAttachment(attachment)}
-            />
+            {folder === "requests" ? (
+              <RequestsTriageBoard
+                emails={emails}
+                onUpdateEmail={updateEmail}
+                onShowToast={showToast}
+              />
+            ) : (
+              <>
+                <EmailList
+                  emails={emails}
+                  selectedId={selectedId}
+                  selectedIds={selectedIds}
+                  onSelect={setSelectedId}
+                  onSelectionChange={setSelectedIds}
+                  onBulkAction={handleBulkActionRequest}
+                  bulkProgress={bulkProgress}
+                  bulkFailures={bulkFailures}
+                  onConvertSender={openSenderConversion}
+                  folder={folder}
+                  filters={filters}
+                  customFolder={customFolder}
+                  compact={preferences.compactMode}
+                  showAvatars={preferences.showAvatars}
+                  useMobile={isMobile}
+                  onArchive={handleArchive}
+                  onStar={handleStar}
+                  onSnooze={handleMobileSnooze}
+                />
+                <EmailView email={selected} actions={emailActions} />
+                <RightPanel
+                  email={selected}
+                  onAction={handleContextAction}
+                  onConvertSender={openSenderConversion}
+                  onSnooze={openSnooze}
+                  calendarEvents={calendar.visibleEvents}
+                  calendars={calendar.calendars}
+                  onShowToast={showToast}
+                  onOpenCalendar={openCalendar}
+                  onCreateEvent={() => {
+                    setCalendarEventId(null);
+                    setCalendarOpen(true);
+                    setCalendarCreateRequest((request) => request + 1);
+                  }}
+                  onDraftReply={(email, prompt) =>
+                    openCompose({
+                      to: email.email,
+                      subject: email.subject.startsWith("Re: ")
+                        ? email.subject
+                        : `Re: ${email.subject}`,
+                      body: `${prompt}\n\nDrafted response:\nThanks for the note. I reviewed the context and will follow up with the next step shortly.${quoteBody(email)}`,
+                    })
+                  }
+                  onPreviewAttachment={(attachment) => setPreviewAttachment(attachment)}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>
