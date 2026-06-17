@@ -40,7 +40,6 @@ const ResizablePanelGroup = ({
   );
 };
 
-
 const ResizablePanel = ({
   onCollapse,
   onExpand,

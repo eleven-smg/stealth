@@ -65,7 +65,8 @@ export function Compose({
   const [encrypted, setEncrypted] = useState(true);
   const [receipt, setReceipt] = useState(true);
   const [postage, setPostage] = useState(initialPostage);
-  const [resolvedRecipients, setResolvedRecipients] = useState<RecipientReadiness[]>(EMPTY_RESOLVED);
+  const [resolvedRecipients, setResolvedRecipients] =
+    useState<RecipientReadiness[]>(EMPTY_RESOLVED);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);

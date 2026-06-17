@@ -26,6 +26,8 @@ test.describe("sender approval", () => {
     await expect(refundButtons).toHaveCount(3);
     await refundButtons.first().click();
 
-    await expect(page.getByText(/Postage refunded for message from Unknown Sender\./i)).toBeVisible();
+    await expect(
+      page.getByText(/Postage refunded for message from Unknown Sender\./i),
+    ).toBeVisible();
   });
 });

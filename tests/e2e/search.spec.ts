@@ -22,10 +22,7 @@ test.describe("search and filter", () => {
   });
 
   test("global shortcuts are ignored while typing in inputs", async ({ page }) => {
-    await page
-      .getByRole("complementary")
-      .getByRole("button", { name: "Compose Ctrl+N" })
-      .click();
+    await page.getByRole("complementary").getByRole("button", { name: "Compose Ctrl+N" }).click();
     await expect(page.getByText("New message")).toBeVisible();
 
     await page.getByPlaceholder("Write your message", { exact: false }).click();

@@ -6,10 +6,7 @@ test.describe("compose flow", () => {
   });
 
   test("opens compose, fills fields, and sends message", async ({ page }) => {
-    await page
-      .getByRole("complementary")
-      .getByRole("button", { name: "Compose Ctrl+N" })
-      .click();
+    await page.getByRole("complementary").getByRole("button", { name: "Compose Ctrl+N" }).click();
     await expect(page.getByText("New message")).toBeVisible();
 
     await page.getByPlaceholder("recipients@", { exact: false }).fill("alice*stellar.org");
@@ -24,10 +21,7 @@ test.describe("compose flow", () => {
   });
 
   test("validates required fields before sending", async ({ page }) => {
-    await page
-      .getByRole("complementary")
-      .getByRole("button", { name: "Compose Ctrl+N" })
-      .click();
+    await page.getByRole("complementary").getByRole("button", { name: "Compose Ctrl+N" }).click();
     await expect(page.getByText("New message")).toBeVisible();
 
     await page.getByRole("button", { name: "Send", exact: true }).click();
@@ -37,10 +31,7 @@ test.describe("compose flow", () => {
   });
 
   test("schedules message instead of immediate send", async ({ page }) => {
-    await page
-      .getByRole("complementary")
-      .getByRole("button", { name: "Compose Ctrl+N" })
-      .click();
+    await page.getByRole("complementary").getByRole("button", { name: "Compose Ctrl+N" }).click();
     await expect(page.getByText("New message")).toBeVisible();
 
     await page.getByPlaceholder("recipients@", { exact: false }).fill("bob*stellar.org");
