@@ -15,10 +15,11 @@ Recommended internal structure:
 - components/
 - services/
 - hooks/
-- 	ests/
+-     ests/
 - docs/
-"@ | Set-Content -Path "tools/v2/team/team-task-board-from-emails/README.md"
+  "@ | Set-Content -Path "tools/v2/team/team-task-board-from-emails/README.md"
   @"
+
 # Team Task Board from Emails Specs
 
 ## Purpose

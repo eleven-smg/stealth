@@ -1308,7 +1308,6 @@ function LayoutSettings({
   );
 }
 
-
 function SettingsToggle({
   label,
   description,
