@@ -51,6 +51,7 @@ export type DashboardSection =
   | "templates"
   | "campaigns"
   | "analytics"
+  | "tags"
   | "audit";
 
 export interface Persona {
@@ -87,7 +88,12 @@ export interface StatCard {
   delta?: string;
 }
 
-export type PresetId = "none" | "relay-verification" | "proof-pending" | "receipt-settlement";
+export type PresetId =
+  | "none"
+  | "relay-verification"
+  | "proof-pending"
+  | "receipt-settlement"
+  | "paid-sender-request";
 
 export interface PresetAccount {
   name: string;
@@ -98,7 +104,7 @@ export interface PresetAccount {
     nodeUri: string;
     latency: string;
     signatureScheme: string;
-    status: "verified" | "pending" | "failed";
+    status: "verified" | "pending" | "failed" | "pending_approval";
     owner: string;
   };
 }
@@ -125,7 +131,7 @@ export interface PresetMail {
     contractAddress: string;
     latency: string;
     signature: string;
-    postageStatus: "pending" | "settled" | "refunded";
+    postageStatus: "pending" | "settled" | "refunded" | "pending_approval" | "approved";
   };
 }
 
@@ -177,4 +183,14 @@ export interface DemoItem {
   id: string;
   title: string;
   description: string;
+}
+
+export type AdminRecordStatus = "active" | "invited" | "suspended";
+
+export interface AdminDemoRecord {
+  id: string;
+  name: string;
+  address: string;
+  role: string;
+  status: AdminRecordStatus;
 }
