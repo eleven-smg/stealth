@@ -1,13 +1,12 @@
 # Team Analytics Dashboard
 
-Team Analytics Dashboard is an isolated V2 team tool workspace for reviewing
-team-level email performance metrics before a future dashboard integration.
+A self-contained V2 team tool that surfaces per-member performance metrics — email volume, response times, SLA breaches, and workload balance — across a configurable time period.
 
 ## Ownership Boundary
 
 All work for this tool must stay inside:
 
-```text
+```
 tools/v2/team/team-analytics-dashboard/
 ```
 
@@ -15,52 +14,65 @@ Do not wire this tool into the main app, routing, inbox architecture, wallet
 core, Stellar core, database schema, or shared design system unless a future
 integration issue explicitly allows it.
 
-## Reviewer Setup
+## Folder Structure
 
-This issue adds folder-local documentation, fixtures, and a standalone Node test.
-No app install is required to review the contribution.
-
-Run from the repository root:
-
-```bash
-node --test tools/v2/team/team-analytics-dashboard/tests/analytics-fixtures.test.mjs
+```
+team-analytics-dashboard/
+├── fixtures/
+│   └── sample-analytics-data.json   # local contract fixture (4 members, 1 week)
+├── tests/
+│   └── analytics-dashboard-fixtures.test.mjs   # zero-dependency Node test suite
+├── docs/
+│   ├── test-plan.md      # how to run and manually validate the tests
+│   └── review-notes.md   # scope, reviewer focus, and follow-up work
+├── specs.md
+└── README.md
 ```
 
-The test validates the sample analytics fixture against the local review
-contract described in `specs.md`.
+## Data Contract
 
-## Analytics Workflow
+The fixture (`fixtures/sample-analytics-data.json`) defines the shape the dashboard consumes:
 
-1. Capture synthetic team metric snapshots.
-2. Normalize totals, response times, backlog, and alert state.
-3. Route each snapshot to `healthy`, `watch`, `needs-attention`, or `blocked`.
-4. Preserve a source report id for auditability.
-5. Keep live aggregation and dashboard wiring out of scope until a future issue
-   allows app integration.
+| Field                             | Type            | Notes                                                         |
+| --------------------------------- | --------------- | ------------------------------------------------------------- |
+| `tool`                            | string          | must equal `"team-analytics-dashboard"`                       |
+| `period.start` / `period.end`     | ISO date string | `YYYY-MM-DD`                                                  |
+| `members[].memberId`              | string          | stable, unique                                                |
+| `members[].status`                | enum            | `active` / `overloaded` / `underutilized` / `away`            |
+| `members[].avgResponseTimeHours`  | number \| null  | null when status is `away`                                    |
+| `members[].slaBreaches`           | integer         | count of threads that exceeded the 4-hour SLA                 |
+| `summary.reviewRequiredMemberIds` | string[]        | populated for any member with slaBreaches > 0                 |
+| `summary.topPerformerId`          | string          | active member with lowest response time and zero SLA breaches |
+| `summary.bottleneckMemberId`      | string          | member with the highest open-thread count                     |
 
-## Fixtures
+## Running the Tests
 
-The folder-local fixture at `fixtures/sample-team-analytics.json` contains:
+No install step required. Run from the repository root:
 
-- a healthy support team snapshot
-- a watch-state sales team snapshot with growing backlog
-- a needs-attention operations snapshot with slow response time
-- a blocked finance snapshot with missing source data
+```bash
+node --test tools/v2/team/team-analytics-dashboard/tests/analytics-dashboard-fixtures.test.mjs
+```
 
-The fixture intentionally uses synthetic teams, dates, and report ids so
-contributors can validate behavior without using real performance or mailbox
-data.
+Expected output: 10 passing tests, 0 failures.
 
-## Documentation Map
+## Fixture Scenarios
 
-- `specs.md` defines the local analytics snapshot contract and scope.
-- `docs/test-plan.md` lists automated and manual review steps.
-- `docs/review-notes.md` explains validation and known limits.
-- `tests/analytics-fixtures.test.mjs` validates the fixture contract.
+The fixture includes one member for each workload archetype:
+
+| Member       | Status        | Scenario                                                          |
+| ------------ | ------------- | ----------------------------------------------------------------- |
+| Aisha Mensah | active        | Healthy contributor — low response time, no SLA breaches          |
+| Ben Torres   | overloaded    | High open-thread count and SLA breaches — surfaces in review list |
+| Clara Osei   | underutilized | All threads resolved — has available capacity                     |
+| David Yun    | away          | No activity this period — null response time                      |
 
 ## Known Limitations
 
-- This contribution does not add app UI or live metric aggregation.
-- Dashboard behavior is represented through fixture expectations only.
-- Data retention, privacy controls, live charts, and notification delivery remain
-  out of scope for this isolated V2 folder.
+- No live data aggregation yet; the fixture is a static snapshot.
+- SLA threshold (4 hours) and overload thresholds are constants in the test file — update them if the product definition changes.
+- `avgResponseTimeHours` is the raw arithmetic mean; future implementation may weight by thread complexity.
+- Away members have null response time; UI rendering N/A instead of 0 is a required behaviour enforced by the test.
+
+## Review
+
+See `docs/test-plan.md` for the full manual review checklist and `docs/review-notes.md` for contributor scope and follow-up issues.
