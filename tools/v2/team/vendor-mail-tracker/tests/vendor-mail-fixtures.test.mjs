@@ -35,17 +35,37 @@ test("sample vendor mail fixture follows the local review contract", async () =>
     assert.ok(allowedPriorities.has(thread.priority), `${thread.id} has invalid priority`);
     assert.ok(allowedStatuses.has(thread.status), `${thread.id} has invalid status`);
     assert.ok(sourceIds.has(thread.sourceMessageId), `${thread.id} source message is missing`);
-    assert.match(thread.lastContactAt, /^\d{4}-\d{2}-\d{2}T/, `${thread.id} needs an ISO last contact`);
+    assert.match(
+      thread.lastContactAt,
+      /^\d{4}-\d{2}-\d{2}T/,
+      `${thread.id} needs an ISO last contact`,
+    );
 
     if (thread.status === "resolved") {
-      assert.equal(thread.nextActionDueAt, null, `${thread.id} resolved threads should not have due dates`);
-      assert.equal(thread.reviewRequired, false, `${thread.id} resolved threads should not require review`);
+      assert.equal(
+        thread.nextActionDueAt,
+        null,
+        `${thread.id} resolved threads should not have due dates`,
+      );
+      assert.equal(
+        thread.reviewRequired,
+        false,
+        `${thread.id} resolved threads should not require review`,
+      );
     } else {
-      assert.match(thread.nextActionDueAt, /^\d{4}-\d{2}-\d{2}T/, `${thread.id} needs an ISO due date`);
+      assert.match(
+        thread.nextActionDueAt,
+        /^\d{4}-\d{2}-\d{2}T/,
+        `${thread.id} needs an ISO due date`,
+      );
     }
 
     if (thread.priority === "high" && thread.status !== "resolved") {
-      assert.equal(thread.reviewRequired, true, `${thread.id} high-priority open threads require review`);
+      assert.equal(
+        thread.reviewRequired,
+        true,
+        `${thread.id} high-priority open threads require review`,
+      );
     }
 
     if (thread.status === "blocked") {
