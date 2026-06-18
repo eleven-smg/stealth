@@ -10,7 +10,9 @@ All work for this tool must stay inside:
 tools/v2/team/team-analytics-dashboard/
 ```
 
-Do not wire this tool into the main app, routing, inbox architecture, wallet core, Stellar core, database schema, or existing design system unless a future integration issue explicitly allows it.
+Do not wire this tool into the main app, routing, inbox architecture, wallet
+core, Stellar core, database schema, or shared design system unless a future
+integration issue explicitly allows it.
 
 ## Folder Structure
 
