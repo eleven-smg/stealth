@@ -33,19 +33,48 @@ test("sample unsubscribe fixture follows the local review contract", async () =>
     assert.ok(candidate.sender, `${candidate.id} needs a sender`);
     assert.ok(allowedMethods.has(candidate.method), `${candidate.id} has invalid method`);
     assert.ok(allowedStatuses.has(candidate.status), `${candidate.id} has invalid status`);
-    assert.equal(typeof candidate.confidence, "number", `${candidate.id} confidence must be numeric`);
-    assert.ok(candidate.confidence >= 0 && candidate.confidence <= 1, `${candidate.id} confidence is out of range`);
-    assert.equal(typeof candidate.safeToOffer, "boolean", `${candidate.id} safeToOffer must be boolean`);
-    assert.ok(sourceIds.has(candidate.sourceMessageId), `${candidate.id} source message is missing`);
+    assert.equal(
+      typeof candidate.confidence,
+      "number",
+      `${candidate.id} confidence must be numeric`,
+    );
+    assert.ok(
+      candidate.confidence >= 0 && candidate.confidence <= 1,
+      `${candidate.id} confidence is out of range`,
+    );
+    assert.equal(
+      typeof candidate.safeToOffer,
+      "boolean",
+      `${candidate.id} safeToOffer must be boolean`,
+    );
+    assert.ok(
+      sourceIds.has(candidate.sourceMessageId),
+      `${candidate.id} source message is missing`,
+    );
     assert.ok(candidate.reason, `${candidate.id} needs a review reason`);
 
     if (candidate.status === "detected") {
-      assert.equal(candidate.safeToOffer, true, `${candidate.id} detected candidates should be offerable`);
-      assert.ok(candidate.confidence >= 0.9, `${candidate.id} detected candidates need high confidence`);
+      assert.equal(
+        candidate.safeToOffer,
+        true,
+        `${candidate.id} detected candidates should be offerable`,
+      );
+      assert.ok(
+        candidate.confidence >= 0.9,
+        `${candidate.id} detected candidates need high confidence`,
+      );
     }
 
-    if (candidate.status === "needs-review" || candidate.status === "unsafe" || candidate.status === "ignored") {
-      assert.equal(candidate.safeToOffer, false, `${candidate.id} must not be offered automatically`);
+    if (
+      candidate.status === "needs-review" ||
+      candidate.status === "unsafe" ||
+      candidate.status === "ignored"
+    ) {
+      assert.equal(
+        candidate.safeToOffer,
+        false,
+        `${candidate.id} must not be offered automatically`,
+      );
     }
 
     const source = sourceById.get(candidate.sourceMessageId);
@@ -54,12 +83,24 @@ test("sample unsubscribe fixture follows the local review contract", async () =>
     }
 
     if (source?.bodyContainsUnsubscribeLink && !source.hasListUnsubscribeHeader) {
-      assert.notEqual(candidate.status, "detected", `${candidate.id} body-only links should not auto-detect`);
+      assert.notEqual(
+        candidate.status,
+        "detected",
+        `${candidate.id} body-only links should not auto-detect`,
+      );
     }
 
     if (source?.isTransactional) {
-      assert.equal(candidate.status, "ignored", `${candidate.id} transactional messages should be ignored`);
-      assert.equal(candidate.method, "none", `${candidate.id} ignored transactional messages should not have a method`);
+      assert.equal(
+        candidate.status,
+        "ignored",
+        `${candidate.id} transactional messages should be ignored`,
+      );
+      assert.equal(
+        candidate.method,
+        "none",
+        `${candidate.id} ignored transactional messages should not have a method`,
+      );
     }
 
     seenStatuses.add(candidate.status);
