@@ -32,6 +32,15 @@ export type {
 export type { CampaignSnapshot } from "./types/campaignSnapshot";
 export type { CampaignTag, TagColorKey } from "./types/campaignTag";
 
+export type {
+  DemoAttachment,
+  DemoCalendarEvent,
+  DemoDataset,
+  DemoMessage,
+  DemoProofRecord,
+  DemoSender,
+} from "./types/dataset";
+
 export {
   CAMPAIGN_STATUS_TOKENS,
   TAG_COLOR_TOKENS,
