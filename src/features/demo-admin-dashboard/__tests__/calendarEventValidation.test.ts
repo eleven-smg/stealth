@@ -65,7 +65,9 @@ describe("validateCalendarEventEditor", () => {
       startTime: "2026-06-23T10:00",
       endTime: "2026-06-23T09:00",
     });
-    const endIssues = issues.filter((i) => i.fieldPath === "endTime" && i.message.includes("after"));
+    const endIssues = issues.filter(
+      (i) => i.fieldPath === "endTime" && i.message.includes("after"),
+    );
     expect(endIssues.length).toBeGreaterThan(0);
   });
 

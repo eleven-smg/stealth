@@ -120,12 +120,7 @@ describe("editorStateToCalendarEvent", () => {
 
 describe("CalendarResponseState constants", () => {
   it("defines all response states", () => {
-    expect(CALENDAR_RESPONSE_STATES).toEqual([
-      "needsAction",
-      "accepted",
-      "declined",
-      "tentative",
-    ]);
+    expect(CALENDAR_RESPONSE_STATES).toEqual(["needsAction", "accepted", "declined", "tentative"]);
   });
 
   it("has options for every state", () => {

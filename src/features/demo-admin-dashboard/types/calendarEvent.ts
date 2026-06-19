@@ -15,7 +15,10 @@ export const CALENDAR_RESPONSE_STATES: CalendarResponseState[] = [
   "tentative",
 ];
 
-export const CALENDAR_RESPONSE_STATE_OPTIONS: Record<CalendarResponseState, CalendarResponseStateOption> = {
+export const CALENDAR_RESPONSE_STATE_OPTIONS: Record<
+  CalendarResponseState,
+  CalendarResponseStateOption
+> = {
   needsAction: {
     state: "needsAction",
     label: "Needs action",

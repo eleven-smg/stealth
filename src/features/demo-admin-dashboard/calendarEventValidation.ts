@@ -3,9 +3,7 @@ import type { CalendarEventEditorState } from "./types/calendarEvent";
 
 const SAFE_DOMAIN_PATTERN = /(@example\.(com|org)|@([\w.-]+)?\.stealth\.demo)$/i;
 
-export function validateCalendarEventEditor(
-  state: CalendarEventEditorState,
-): ValidationIssue[] {
+export function validateCalendarEventEditor(state: CalendarEventEditorState): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const datasetId = "calendar-event-editor";
 

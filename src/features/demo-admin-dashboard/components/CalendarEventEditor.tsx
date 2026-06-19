@@ -1,11 +1,8 @@
 import { useMemo, useState } from "react";
-import { Calendar, X, Plus } from "lucide-react";
+import { Calendar, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CalendarEventEditorState, CalendarResponseState } from "../types/calendarEvent";
-import {
-  CALENDAR_RESPONSE_STATES,
-  getResponseStateOption,
-} from "../types/calendarEvent";
+import { CALENDAR_RESPONSE_STATES, getResponseStateOption } from "../types/calendarEvent";
 import { validateCalendarEventEditor } from "../calendarEventValidation";
 import { ValidationResultsPanel } from "../ValidationResultsPanel";
 import type { ValidationIssue } from "../validation-types";
