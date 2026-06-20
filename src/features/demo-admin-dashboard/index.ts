@@ -21,6 +21,16 @@ export {
 
 export { defaultCampaignSnapshots } from "./fixtures/campaignSnapshotFixtures";
 export { defaultCampaignTags } from "./fixtures/campaignTagFixtures";
+export {
+  getSenderRecoveryOutcomeSummary,
+  senderRecoveryCampaignPreset,
+  senderRecoveryRequestStates,
+  validateSenderRecoveryCampaignPreset,
+} from "./fixtures/senderRecoveryCampaignPreset";
+export type {
+  SenderRecoveryRequestState,
+  SenderRecoveryRequestStatus,
+} from "./fixtures/senderRecoveryCampaignPreset";
 
 export type {
   AdminDashboardBreakpoint,
