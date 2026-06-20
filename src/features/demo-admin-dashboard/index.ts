@@ -484,3 +484,18 @@ export {
   loadScenarioIntoDraft,
 } from "./helpers/scenarioRegistry";
 export type { DemoScenario, ScenarioLoadMode, ScenarioRegistry } from "./types/scenario";
+
+// Demo Inbox Preview Components (issue #24): folder-local preview without live integration
+export { DemoInboxPreview } from "./components/DemoInboxPreview";
+export { DemoInboxList } from "./components/DemoInboxList";  
+export { DemoMailReader } from "./components/DemoMailReader";
+
+// Demo Inbox Data Fixtures (issue #24): safe demo data for inbox preview
+export {
+  createDemoInboxData,
+  getDemoMessagesByLabel,
+  getUnreadDemoMessages,
+  getStarredDemoMessages,
+  getDemoMessagesWithAttachments,
+  getDemoMessagesWithEvents,
+} from "./fixtures/demoInboxData";
