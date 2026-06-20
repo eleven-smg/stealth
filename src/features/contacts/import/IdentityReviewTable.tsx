@@ -72,8 +72,8 @@ export function IdentityReviewTable({ rows, onChange }: Props) {
 
   const updateRow = useCallback(
     (id: string, patch: Partial<ImportedContactRow>) => {
-      onChange((prev) =>
-        prev.map((r) => {
+      onChange(
+        rows.map((r) => {
           if (r.id !== id) return r;
           const updated = { ...r, ...patch };
           if ("address" in patch) {
@@ -83,14 +83,14 @@ export function IdentityReviewTable({ rows, onChange }: Props) {
         }),
       );
     },
-    [onChange],
+    [onChange, rows],
   );
 
   const removeRow = useCallback(
     (id: string) => {
-      onChange((prev) => prev.filter((r) => r.id !== id));
+      onChange(rows.filter((r) => r.id !== id));
     },
-    [onChange],
+    [onChange, rows],
   );
 
   const ambiguousCount = ambiguous.length;

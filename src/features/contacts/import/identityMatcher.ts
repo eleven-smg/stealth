@@ -35,7 +35,7 @@ function editDistance(a: string, b: string): number {
   let prev = Array.from({ length: n + 1 }, (_, i) => i);
 
   for (let i = 1; i <= m; i++) {
-    let curr = [i];
+    const curr = [i];
     for (let j = 1; j <= n; j++) {
       curr[j] =
         a[i - 1] === b[j - 1] ? prev[j - 1] : 1 + Math.min(prev[j], curr[j - 1], prev[j - 1]);
@@ -51,7 +51,6 @@ function editDistance(a: string, b: string): number {
  * 1.0 = exact match (case-insensitive).
  * >0.6 = fuzzy match.
  * Below threshold = no match.
- * Optimized with early exit for length differences > threshold.
  */
 export function nameSimilarity(a: string, b: string): number {
   const an = a.trim().toLowerCase();
@@ -59,17 +58,8 @@ export function nameSimilarity(a: string, b: string): number {
   if (!an || !bn) return 0;
   if (an === bn) return 1;
 
-  // Early exit: if length difference is too large, can't reach threshold
-  const maxLen = Math.max(an.length, bn.length);
-  const minLen = Math.min(an.length, bn.length);
-  const lengthDiff = maxLen - minLen;
-
-  // If length difference alone would push us below threshold (0.6), skip edit distance
-  if (1 - lengthDiff / maxLen < FUZZY_THRESHOLD) {
-    return 0;
-  }
-
   const dist = editDistance(an, bn);
+  const maxLen = Math.max(an.length, bn.length);
   return Math.max(0, 1 - dist / maxLen);
 }
 
