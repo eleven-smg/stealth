@@ -207,11 +207,7 @@ export function DemoMailReader({ message, onBackToList }: DemoMailReaderProps) {
 
           {/* Message Body */}
           <div className="prose prose-sm dark:prose-invert max-w-none">
-            <div
-              // eslint-disable-next-line react/no-danger
-              dangerouslySetInnerHTML={{ __html: message.body }}
-              className="leading-relaxed"
-            />
+            <div dangerouslySetInnerHTML={{ __html: message.body }} className="leading-relaxed" />
           </div>
 
           {/* Labels */}
