@@ -8,17 +8,17 @@ design system in `src/features/design-system/`.
 
 All colours are applied via Tailwind utility classes.
 
-| Token              | Usage                            | Tailwind Class               |
-|--------------------|----------------------------------|------------------------------|
-| Background         | Card / surface backgrounds       | `bg-white`, `bg-gray-50`     |
-| Foreground         | Primary text                     | `text-gray-800`, `text-gray-900` |
-| Muted              | Secondary / description text     | `text-gray-500`              |
-| Border             | Card borders                     | `border-gray-100`, `border-indigo-200` |
-| Primary (indigo)   | Interactive controls, branding   | `text-indigo-600`, `bg-indigo-600` |
-| Success (green)    | Complete, positive state         | `text-green-500`, `bg-green-50`, `bg-green-600` |
-| Warning (amber)    | Alerts, warnings, medium confidence | `text-amber-700`, `bg-amber-50`, `bg-amber-500` |
-| Error (red)        | Errors, destructive actions      | `text-red-500`, `bg-red-50`, `bg-red-600` |
-| Neutral (gray)     | Low confidence, secondary actions | `text-gray-400`, `bg-gray-50` |
+| Token            | Usage                               | Tailwind Class                                  |
+| ---------------- | ----------------------------------- | ----------------------------------------------- |
+| Background       | Card / surface backgrounds          | `bg-white`, `bg-gray-50`                        |
+| Foreground       | Primary text                        | `text-gray-800`, `text-gray-900`                |
+| Muted            | Secondary / description text        | `text-gray-500`                                 |
+| Border           | Card borders                        | `border-gray-100`, `border-indigo-200`          |
+| Primary (indigo) | Interactive controls, branding      | `text-indigo-600`, `bg-indigo-600`              |
+| Success (green)  | Complete, positive state            | `text-green-500`, `bg-green-50`, `bg-green-600` |
+| Warning (amber)  | Alerts, warnings, medium confidence | `text-amber-700`, `bg-amber-50`, `bg-amber-500` |
+| Error (red)      | Errors, destructive actions         | `text-red-500`, `bg-red-50`, `bg-red-600`       |
+| Neutral (gray)   | Low confidence, secondary actions   | `text-gray-400`, `bg-gray-50`                   |
 
 ## Typography
 
@@ -47,13 +47,13 @@ Font family is inherited from the host environment (no local override).
 
 All interactive elements follow these conventions:
 
-| Element           | Focus Style                                      |
-|-------------------|--------------------------------------------------|
-| Toolbar buttons   | `focus:outline-none focus:ring-2 focus:ring-{color}-500 focus:ring-offset-2` |
-| Card actions      | Same as above, with `focus:ring-offset-1`        |
-| Card container    | `focus-within:ring-2 focus-within:ring-indigo-500` |
-| Date input        | `focus:outline-none focus:ring-2 focus:ring-indigo-500` |
-| Tab order         | Native DOM order (left-to-right, top-to-bottom) |
+| Element         | Focus Style                                                                  |
+| --------------- | ---------------------------------------------------------------------------- |
+| Toolbar buttons | `focus:outline-none focus:ring-2 focus:ring-{color}-500 focus:ring-offset-2` |
+| Card actions    | Same as above, with `focus:ring-offset-1`                                    |
+| Card container  | `focus-within:ring-2 focus-within:ring-indigo-500`                           |
+| Date input      | `focus:outline-none focus:ring-2 focus:ring-indigo-500`                      |
+| Tab order       | Native DOM order (left-to-right, top-to-bottom)                              |
 
 ### Keyboard interactions
 
@@ -63,20 +63,20 @@ All interactive elements follow these conventions:
 
 ## Accessibility Patterns
 
-| Pattern               | Implementation                                              |
-|-----------------------|-------------------------------------------------------------|
-| Landmark region       | `role="region"` + `aria-labelledby` on root container       |
-| Live region           | `aria-live="polite"` + `aria-atomic="true"` on content area |
-| Loading indicator     | `role="status"` + `aria-busy="true"` + `aria-label`        |
-| Error announcement    | `role="alert"` on error container                           |
-| Empty state           | `role="status"` with `aria-live="polite"`                  |
-| Button groups         | `role="group"` + `aria-label` for action clusters           |
-| Toggle buttons        | `aria-pressed` for state control buttons                    |
-| Icon decoration       | `aria-hidden="true"` on all decorative SVGs                 |
-| List semantics        | `<ul>` + `aria-label` + `<li>` for reminder list            |
-| Signal list           | `role="list"` + `aria-label` + `role="listitem"`            |
-| Inline editing        | `autoFocus` on input, Escape to cancel, Enter to save       |
-| Screen-reader labels  | `aria-label` on all icon-only or ambiguous controls         |
+| Pattern              | Implementation                                              |
+| -------------------- | ----------------------------------------------------------- |
+| Landmark region      | `role="region"` + `aria-labelledby` on root container       |
+| Live region          | `aria-live="polite"` + `aria-atomic="true"` on content area |
+| Loading indicator    | `role="status"` + `aria-busy="true"` + `aria-label`         |
+| Error announcement   | `role="alert"` on error container                           |
+| Empty state          | `role="status"` with `aria-live="polite"`                   |
+| Button groups        | `role="group"` + `aria-label` for action clusters           |
+| Toggle buttons       | `aria-pressed` for state control buttons                    |
+| Icon decoration      | `aria-hidden="true"` on all decorative SVGs                 |
+| List semantics       | `<ul>` + `aria-label` + `<li>` for reminder list            |
+| Signal list          | `role="list"` + `aria-label` + `role="listitem"`            |
+| Inline editing       | `autoFocus` on input, Escape to cancel, Enter to save       |
+| Screen-reader labels | `aria-label` on all icon-only or ambiguous controls         |
 
 ## Animation & Transition
 
