@@ -47,9 +47,21 @@ describe("generateTeamDigest", () => {
     expect(summary.totalItems).toBe(4);
     expect(summary.authors).toEqual({ Alex: 2, Riya: 1, Marina: 1 });
     expect(summary.projects).toEqual({ Roadmap: 2, Support: 1, Product: 1 });
-    expect(summary.tags).toEqual({ planning: 2, team: 1, support: 1, triage: 1, release: 1, review: 1, coordination: 1 });
+    expect(summary.tags).toEqual({
+      planning: 2,
+      team: 1,
+      support: 1,
+      triage: 1,
+      release: 1,
+      review: 1,
+      coordination: 1,
+    });
     expect(summary.actionItems).toHaveLength(2);
-    expect(summary.topSubjects).toEqual(["Weekly planning sync", "Customer support backlog", "Launch checklist review"]);
+    expect(summary.topSubjects).toEqual([
+      "Weekly planning sync",
+      "Customer support backlog",
+      "Launch checklist review",
+    ]);
     expect(new Date(summary.generatedAt).toString()).not.toBe("Invalid Date");
   });
 
