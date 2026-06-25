@@ -4,14 +4,6 @@ export {
   createTaskBoardService,
 } from "./services/taskBoardService";
 
-export type {
-  TaskBoardService,
-} from "./services/taskBoardService";
+export type { TaskBoardService } from "./services/taskBoardService";
 
-export type {
-  Email,
-  TaskCard,
-  TaskBoard,
-  LoadState,
-  TaskBoardServiceConfig,
-} from "./types";
+export type { Email, TaskCard, TaskBoard, LoadState, TaskBoardServiceConfig } from "./types";

@@ -61,7 +61,8 @@ function extractTaskFromEmail(email) {
   if (dateMatch) {
     dueDate = dateMatch[1];
   } else {
-    const fridayMatch = body.match(/before Friday|by Friday/i) || subject.match(/needed by Friday/i);
+    const fridayMatch =
+      body.match(/before Friday|by Friday/i) || subject.match(/needed by Friday/i);
     if (fridayMatch && email.receivedAt) {
       const recDate = new Date(email.receivedAt);
       const day = recDate.getUTCDay(); // 0: Sun, 1: Mon, ..., 5: Fri
@@ -79,7 +80,11 @@ function extractTaskFromEmail(email) {
     status = "done";
   } else if (bodyLower.includes("blocked") || bodyLower.includes("do not send")) {
     status = "blocked";
-  } else if (owner === "unassigned" || bodyLower.includes("confirm who owns") || bodyLower.includes("needs approval")) {
+  } else if (
+    owner === "unassigned" ||
+    bodyLower.includes("confirm who owns") ||
+    bodyLower.includes("needs approval")
+  ) {
     status = "triage";
   }
 
@@ -87,7 +92,11 @@ function extractTaskFromEmail(email) {
   let priority = "medium";
   if (status === "done") {
     priority = "low";
-  } else if (status === "blocked" || bodyLower.includes("due 2026-06-20") || subject.includes("Invoice needs approval")) {
+  } else if (
+    status === "blocked" ||
+    bodyLower.includes("due 2026-06-20") ||
+    subject.includes("Invoice needs approval")
+  ) {
     priority = "high";
   }
 

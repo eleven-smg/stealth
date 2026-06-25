@@ -30,13 +30,13 @@
 
 ### State Coverage
 
-| State             | Where handled                                                                            |
-| ----------------- | ---------------------------------------------------------------------------------------- |
-| Loading           | `createTaskBoardService()` async methods wrapper with configurable delay (`delayMs`)      |
-| Error (simulated) | `failureRate` option throws `Error("... simulated")`                                     |
-| Empty             | Empty emails input array resolves to empty board columns                                 |
-| Success (Read)    | `getBoard()` and `getTasks()` return formatted board columns and tasks respectively      |
-| Success (Write)   | `updateTask()`, `addTask()`, `deleteTask()` update in-memory active board state          |
+| State             | Where handled                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------ |
+| Loading           | `createTaskBoardService()` async methods wrapper with configurable delay (`delayMs`) |
+| Error (simulated) | `failureRate` option throws `Error("... simulated")`                                 |
+| Empty             | Empty emails input array resolves to empty board columns                             |
+| Success (Read)    | `getBoard()` and `getTasks()` return formatted board columns and tasks respectively  |
+| Success (Write)   | `updateTask()`, `addTask()`, `deleteTask()` update in-memory active board state      |
 
 ### Fixtures
 
