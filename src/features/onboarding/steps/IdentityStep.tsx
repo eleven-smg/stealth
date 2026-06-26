@@ -49,7 +49,10 @@ export function IdentityStep({ freighter, onAdvance }: Props) {
       </div>
 
       {state.status === "unavailable" && (
-        <div role="status" className="rounded-xl border border-amber-400/20 bg-amber-400/[0.06] p-4">
+        <div
+          role="status"
+          className="rounded-xl border border-amber-400/20 bg-amber-400/[0.06] p-4"
+        >
           <p className="text-sm text-amber-300">
             Freighter wallet extension not found. Install it, then return here.
           </p>
@@ -72,7 +75,10 @@ export function IdentityStep({ freighter, onAdvance }: Props) {
       )}
 
       {state.status === "connected" && (
-        <div role="status" className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] p-4">
+        <div
+          role="status"
+          className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] p-4"
+        >
           <p className="text-xs font-mono text-emerald-300 break-all">{state.address}</p>
           <p className="mt-1 text-xs text-muted-foreground">Wallet connected. Continuing…</p>
         </div>

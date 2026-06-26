@@ -55,7 +55,10 @@ export function PolicyReviewStep({ draft, isSubmitting, submitError, onSubmit, o
       </div>
 
       {submitError && (
-        <div role="alert" className="flex items-start gap-2 rounded-xl border border-red-400/20 bg-red-400/[0.06] p-4">
+        <div
+          role="alert"
+          className="flex items-start gap-2 rounded-xl border border-red-400/20 bg-red-400/[0.06] p-4"
+        >
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
           <div className="space-y-1">
             <p className="text-sm text-red-300">{submitError}</p>
