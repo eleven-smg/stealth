@@ -3,6 +3,7 @@
 To set up the Grammar Cleaner tool for development and testing:
 
 1.  **Install Dependencies**: Ensure you have installed the project dependencies from the root directory.
+
     ```bash
     npm install
     ```

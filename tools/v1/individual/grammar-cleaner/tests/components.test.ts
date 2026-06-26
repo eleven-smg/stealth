@@ -14,7 +14,12 @@ const sampleInput = SAMPLE_TEXTS[0].input;
 const onChange = () => {};
 const onSubmit = () => {};
 
-function isElement(n: unknown): n is ReactElement {
+interface PropsWithChildren {
+  children?: ReactNode;
+  [key: string]: any;
+}
+
+function isElement(n: unknown): n is ReactElement<PropsWithChildren> {
   return (
     typeof n === "object" && n !== null && "type" in n && "props" in (n as Record<string, unknown>)
   );
@@ -22,8 +27,8 @@ function isElement(n: unknown): n is ReactElement {
 
 function findInTree(
   node: ReactNode,
-  predicate: (el: ReactElement) => boolean,
-): ReactElement | null {
+  predicate: (el: ReactElement<PropsWithChildren>) => boolean,
+): ReactElement<PropsWithChildren> | null {
   if (!isElement(node)) return null;
   if (predicate(node)) return node;
   const children = node.props.children;
@@ -36,7 +41,10 @@ function findInTree(
   return null;
 }
 
-function hasElement(node: ReactNode, predicate: (el: ReactElement) => boolean): boolean {
+function hasElement(
+  node: ReactNode,
+  predicate: (el: ReactElement<PropsWithChildren>) => boolean,
+): boolean {
   return findInTree(node, predicate) !== null;
 }
 

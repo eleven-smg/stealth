@@ -5,20 +5,21 @@ The Grammar Cleaner tool includes a set of fixtures to ensure consistent behavio
 ## Fixture Categories
 
 - **Simple Case**: Lowercase text without ending punctuation.
-    - *Input*: `this is a test`
-    - *Expected*: `This is a test.`
+  - _Input_: `this is a test`
+  - _Expected_: `This is a test.`
 - **Common Typos**: Words frequently misspelled.
-    - *Input*: `i recieved teh package yesterday`
-    - *Expected*: `I received the package yesterday.`
+  - _Input_: `i recieved teh package yesterday`
+  - _Expected_: `I received the package yesterday.`
 - **Multiple Sentences**: Handling sentence boundaries.
-    - *Input*: `hello there. how are you today? it is sunny`
-    - *Expected*: `Hello there. How are you today? It is sunny.`
+  - _Input_: `hello there. how are you today? it is sunny`
+  - _Expected_: `Hello there. How are you today? It is sunny.`
 - **Whitespace**: Cleaning up irregular spacing.
-    - *Input*: `  Too much    space here   `
-    - *Expected*: `Too much space here.`
+  - _Input_: `  Too much    space here   `
+  - _Expected_: `Too much space here.`
 - **Case Preservation**: Maintaining capitalization on corrected typos.
-    - *Input*: `Teh adress is wrong`
-    - *Expected*: `The address is wrong.`
+  - _Input_: `Teh adress is wrong`
+  - _Expected_: `The address is wrong.`
+
 # Grammar Cleaner Fixtures
 
 All fixtures are synthetic text samples. None contain real personal data.
