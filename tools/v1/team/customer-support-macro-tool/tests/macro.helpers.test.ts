@@ -132,7 +132,7 @@ describe("validateMacroInput — category branch", () => {
 
 describe("interpolateMacro — underscored and numeric variable names", () => {
   it("replaces variable names containing digits and underscores", () => {
-    const result = interpolateMacro("Order order_id_2 confirmed.", {
+    const result = interpolateMacro("Order {{order_id_2}} confirmed.", {
       order_id_2: "A-42",
     });
     expect(result).toBe("Order A-42 confirmed.");
