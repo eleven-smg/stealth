@@ -6,9 +6,7 @@ import { mockPayments } from "../fixtures/payments.fixtures";
 
 describe("usePaymentRequests hook", () => {
   it("should initialize with initialPayments", () => {
-    const { result } = renderHook(() =>
-      usePaymentRequests({ initialPayments: mockPayments }),
-    );
+    const { result } = renderHook(() => usePaymentRequests({ initialPayments: mockPayments }));
 
     expect(result.current.payments).toEqual(mockPayments);
     expect(result.current.isLoading).toBe(false);
@@ -16,18 +14,14 @@ describe("usePaymentRequests hook", () => {
   });
 
   it("should filter by status", () => {
-    const { result } = renderHook(() =>
-      usePaymentRequests({ initialPayments: mockPayments }),
-    );
+    const { result } = renderHook(() => usePaymentRequests({ initialPayments: mockPayments }));
 
     const pending = result.current.filterByStatus("pending");
-    expect(pending).toHaveLength(mockPayments.filter(p => p.status === "pending").length);
+    expect(pending).toHaveLength(mockPayments.filter((p) => p.status === "pending").length);
   });
 
   it("should filter by priority", () => {
-    const { result } = renderHook(() =>
-      usePaymentRequests({ initialPayments: mockPayments }),
-    );
+    const { result } = renderHook(() => usePaymentRequests({ initialPayments: mockPayments }));
 
     const urgent = result.current.filterByPriority("urgent");
     expect(urgent).toHaveLength(1);
@@ -36,9 +30,7 @@ describe("usePaymentRequests hook", () => {
 
   it("should fetch payments on calling fetch", async () => {
     const mockOnFetch = vi.fn().mockResolvedValue(mockPayments);
-    const { result } = renderHook(() =>
-      usePaymentRequests({ onFetch: mockOnFetch }),
-    );
+    const { result } = renderHook(() => usePaymentRequests({ onFetch: mockOnFetch }));
 
     // Initial load will trigger fetch because initialPayments is not provided but onFetch is
     expect(result.current.isLoading).toBe(true);
@@ -55,9 +47,7 @@ describe("usePaymentRequests hook", () => {
 
   it("should handle fetch error", async () => {
     const mockOnFetch = vi.fn().mockRejectedValue(new Error("Failed to fetch"));
-    const { result } = renderHook(() =>
-      usePaymentRequests({ onFetch: mockOnFetch }),
-    );
+    const { result } = renderHook(() => usePaymentRequests({ onFetch: mockOnFetch }));
 
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));

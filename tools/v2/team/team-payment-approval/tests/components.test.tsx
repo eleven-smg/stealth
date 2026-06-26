@@ -25,12 +25,12 @@ describe("State components", () => {
         title="No Payments Found"
         description="Try refreshing."
         action={<button onClick={actionMock}>Refresh</button>}
-      />
+      />,
     );
 
     expect(screen.getByText("No Payments Found")).toBeDefined();
     expect(screen.getByText("Try refreshing.")).toBeDefined();
-    
+
     const btn = screen.getByRole("button", { name: "Refresh" });
     fireEvent.click(btn);
     expect(actionMock).toHaveBeenCalled();
@@ -48,7 +48,7 @@ describe("State components", () => {
         title="Something went wrong"
         details="Timeout error"
         action={<button onClick={actionMock}>Retry</button>}
-      />
+      />,
     );
 
     expect(screen.getByText("Something went wrong")).toBeDefined();
@@ -69,12 +69,7 @@ describe("State components", () => {
 describe("PaymentApprovalList component", () => {
   it("should render list of payment requests", () => {
     const onSelectMock = vi.fn();
-    render(
-      <PaymentApprovalList
-        payments={mockPayments}
-        onSelectPayment={onSelectMock}
-      />
-    );
+    render(<PaymentApprovalList payments={mockPayments} onSelectPayment={onSelectMock} />);
 
     // Verify recipient names are displayed
     expect(screen.getByText("Acme Corp")).toBeDefined();
@@ -95,7 +90,7 @@ describe("PaymentApprovalList component", () => {
         onSelectPayment={() => {}}
         onSort={onSortMock}
         sortBy="date"
-      />
+      />,
     );
 
     const amountHeader = screen.getByRole("button", { name: "Amount" });
@@ -105,12 +100,7 @@ describe("PaymentApprovalList component", () => {
 
   it("should support keyboard navigation", () => {
     const onSelectMock = vi.fn();
-    render(
-      <PaymentApprovalList
-        payments={mockPayments}
-        onSelectPayment={onSelectMock}
-      />
-    );
+    render(<PaymentApprovalList payments={mockPayments} onSelectPayment={onSelectMock} />);
 
     const rows = screen.getAllByRole("row");
     // Row 0 is the table header, Row 1 is the first payment item
@@ -132,7 +122,7 @@ describe("PaymentApprovalForm component", () => {
         onApprove={vi.fn()}
         onReject={vi.fn()}
         onCancel={vi.fn()}
-      />
+      />,
     );
 
     expect(screen.getByText("Acme Corp")).toBeDefined();
@@ -148,7 +138,7 @@ describe("PaymentApprovalForm component", () => {
         onApprove={vi.fn()}
         onReject={vi.fn()}
         onCancel={vi.fn()}
-      />
+      />,
     );
 
     const submitBtn = screen.getByRole("button", { name: "Select a decision to continue" });
@@ -159,14 +149,14 @@ describe("PaymentApprovalForm component", () => {
   it("should invoke callbacks on approval and rejection", async () => {
     const onApproveMock = vi.fn().mockResolvedValue(undefined);
     const onRejectMock = vi.fn().mockResolvedValue(undefined);
-    
+
     render(
       <PaymentApprovalForm
         payment={mockPayments[0]}
         onApprove={onApproveMock}
         onReject={onRejectMock}
         onCancel={vi.fn()}
-      />
+      />,
     );
 
     // Select Approve radio button
@@ -180,7 +170,7 @@ describe("PaymentApprovalForm component", () => {
     // Submit form
     const submitBtn = screen.getByRole("button", { name: /Confirm approval of/ });
     expect(submitBtn.hasAttribute("disabled")).toBe(false);
-    
+
     // Simulate form submission
     fireEvent.click(submitBtn);
 
@@ -191,13 +181,8 @@ describe("PaymentApprovalForm component", () => {
 describe("TeamPaymentApprovalTool component integration", () => {
   it("should run full workflow successfully", async () => {
     const onApproveMock = vi.fn().mockResolvedValue(undefined);
-    
-    render(
-      <TeamPaymentApprovalTool
-        payments={mockPayments}
-        onApprove={onApproveMock}
-      />
-    );
+
+    render(<TeamPaymentApprovalTool payments={mockPayments} onApprove={onApproveMock} />);
 
     // Should display list initially
     expect(screen.getByText("Pending Approvals (6)")).toBeDefined();
