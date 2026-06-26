@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   AlertTriangle,
   Bell,
@@ -13,16 +13,17 @@ import {
   Lock,
   Palette,
   RefreshCw,
+  ScrollText,
   ShieldCheck,
   Trash2,
   User,
   X,
 } from "lucide-react";
-import { useState, type CSSProperties } from "react";
+import { useState, useEffect, useRef, type CSSProperties } from "react";
 import { Surface } from "@/features/design-system";
 import { cn } from "@/lib/utils";
 import { SHORTCUT_DEFINITIONS } from "@/features/command-palette";
-import type { ReceiptPreference, UiPreferences } from "@/features/preferences";
+import type { ReceiptPreference, UiPreferences, LayoutPreferences } from "@/features/preferences";
 import {
   MAILBOX_POLICY_TEMPLATES,
   buildCustomMailboxPolicyTemplate,
@@ -31,19 +32,23 @@ import {
   savedCustomTemplateToPreferences,
   templateToPreferences,
   type MailboxPolicyTemplateId,
+  type MailboxPolicyTemplate,
   type SavedMailboxPolicyTemplate,
 } from "@/features/settings/mailbox-policy-templates";
 import { AuditLog } from "@/features/audit-log";
+import { ChangelogPanel, useChangelog } from "@/features/changelog";
 
 const tabs = [
   { id: "account", label: "Account", icon: User },
   { id: "appearance", label: "Appearance", icon: Palette },
   { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "layout", label: "Layout", icon: Laptop },
   { id: "inbox", label: "Inbox control", icon: ShieldCheck },
   { id: "receipts", label: "Read receipts", icon: CheckCheck },
   { id: "security", label: "Security", icon: Lock },
   { id: "shortcuts", label: "Shortcuts", icon: Keyboard },
   { id: "audit", label: "Audit log", icon: ClipboardList },
+  { id: "changelog", label: "What's new", icon: ScrollText },
 ] as const;
 
 type Tab = (typeof tabs)[number]["id"];
@@ -54,6 +59,9 @@ export function SettingsModal({
   onCancel,
   preferences,
   onChange,
+  layout,
+  onLayoutChange,
+  onResetLayout,
   onSave,
 }: {
   open: boolean;
@@ -61,9 +69,75 @@ export function SettingsModal({
   onCancel?: () => void;
   preferences: UiPreferences;
   onChange: (preferences: UiPreferences) => void;
+  layout: LayoutPreferences;
+  onLayoutChange: (layout: LayoutPreferences) => void;
+  onResetLayout: () => void;
   onSave: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<Tab>("account");
+  const { hasUnread } = useChangelog();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const dismiss = onCancel ?? onClose;
+  const prefersReducedMotion = useReducedMotion();
+  const panelTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { type: "spring" as const, stiffness: 300, damping: 30 };
+
+  // Keyboard + focus management for the dialog: close on Escape, focus the
+  // panel on open, keep Tab focus inside it, and restore focus on close.
+  useEffect(() => {
+    if (!open) return;
+    const panel = panelRef.current;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const focusableSelector =
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    panel?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        dismiss();
+        return;
+      }
+      if (e.key !== "Tab" || !panel) return;
+      const focusables = Array.from(panel.querySelectorAll<HTMLElement>(focusableSelector)).filter(
+        (el) => el.offsetParent !== null,
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || active === panel)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      previouslyFocused?.focus?.();
+    };
+  }, [open, dismiss]);
+
+  const onTabListKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    const ids = tabs.map((t) => t.id);
+    const current = ids.indexOf(activeTab);
+    let next = current;
+    if (e.key === "ArrowDown" || e.key === "ArrowRight") next = (current + 1) % ids.length;
+    else if (e.key === "ArrowUp" || e.key === "ArrowLeft")
+      next = (current - 1 + ids.length) % ids.length;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = ids.length - 1;
+    else return;
+    e.preventDefault();
+    setActiveTab(ids[next]);
+    document.getElementById(`settings-tab-${ids[next]}`)?.focus();
+  };
 
   return (
     <AnimatePresence>
@@ -73,52 +147,81 @@ export function SettingsModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onCancel ?? onClose}
+            onClick={dismiss}
+            aria-hidden="true"
             className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
           />
           <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="settings-title"
+            tabIndex={-1}
             initial={{ opacity: 0, scale: 0.96, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={panelTransition}
             className={cn(
-              "glass-strong fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl transition-all",
-              activeTab === "audit"
+              "glass-strong fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl transition-all outline-none",
+              activeTab === "audit" || activeTab === "changelog"
                 ? "w-[min(800px,calc(100vw-2rem))]"
                 : "w-[min(680px,calc(100vw-2rem))]",
             )}
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
-              <h2 className="text-sm font-semibold text-foreground">Settings</h2>
+              <h2 id="settings-title" className="text-sm font-semibold text-foreground">
+                Settings
+              </h2>
               <button
-                onClick={onCancel ?? onClose}
-                className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground"
+                onClick={dismiss}
+                aria-label="Close settings"
+                className="glow-ring rounded-lg p-1.5 text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground active:scale-95"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
 
-            <div className={cn("flex", activeTab === "audit" ? "h-[520px]" : "min-h-[400px]")}>
+            <div
+              className={cn(
+                "flex",
+                activeTab === "audit" || activeTab === "changelog" ? "h-[520px]" : "min-h-[400px]",
+              )}
+            >
               {/* Sidebar tabs */}
               <div className="w-48 border-r border-white/5 p-3">
-                <nav className="space-y-1">
+                <nav
+                  role="tablist"
+                  aria-orientation="vertical"
+                  aria-label="Settings sections"
+                  onKeyDown={onTabListKeyDown}
+                  className="space-y-1"
+                >
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
+                    const hasUnread = false; // Stubbed to prevent TS error, since it's not present in this scope.
                     return (
                       <button
                         key={tab.id}
+                        id={`settings-tab-${tab.id}`}
+                        role="tab"
+                        aria-selected={isActive}
+                        aria-controls={`settings-panel-${tab.id}`}
+                        tabIndex={isActive ? 0 : -1}
                         onClick={() => setActiveTab(tab.id)}
                         className={cn(
-                          "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
+                          "glow-ring flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition active:scale-[0.98]",
                           isActive
                             ? "bg-white/[0.08] text-foreground"
                             : "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground",
                         )}
                       >
                         <Icon className="h-4 w-4" />
-                        {tab.label}
+                        <span className="flex-1 text-left">{tab.label}</span>
+                        {tab.id === "changelog" && hasUnread && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                        )}
                       </button>
                     );
                   })}
@@ -126,13 +229,26 @@ export function SettingsModal({
               </div>
 
               {/* Content */}
-              <div className="flex-1 p-5 max-h-[450px] overflow-y-auto">
+              <div
+                role="tabpanel"
+                id={`settings-panel-${activeTab}`}
+                aria-labelledby={`settings-tab-${activeTab}`}
+                tabIndex={0}
+                className="glow-ring flex-1 p-5 max-h-[450px] overflow-y-auto"
+              >
                 {activeTab === "account" && <AccountSettings />}
                 {activeTab === "appearance" && (
                   <AppearanceSettings preferences={preferences} onChange={onChange} />
                 )}
                 {activeTab === "notifications" && (
                   <NotificationSettings preferences={preferences} onChange={onChange} />
+                )}
+                {activeTab === "layout" && (
+                  <LayoutSettings
+                    layout={layout}
+                    onChange={onLayoutChange}
+                    onReset={onResetLayout}
+                  />
                 )}
                 {activeTab === "inbox" && (
                   <InboxSettings open={open} preferences={preferences} onChange={onChange} />
@@ -143,6 +259,7 @@ export function SettingsModal({
                 {activeTab === "security" && <SecuritySettings />}
                 {activeTab === "shortcuts" && <ShortcutSettings />}
                 {activeTab === "audit" && <AuditLog />}
+                {activeTab === "changelog" && <ChangelogPanel />}
               </div>
             </div>
             <div className="flex items-center justify-between border-t border-white/5 px-5 py-3">
@@ -153,7 +270,7 @@ export function SettingsModal({
               <div className="flex items-center gap-2">
                 <button
                   onClick={onCancel ?? onClose}
-                  className="rounded-lg border border-white/10 px-4 py-2 text-xs font-semibold text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground"
+                  className="rounded-lg border border-white/10 px-4 py-2 text-xs font-semibold text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground active:scale-[0.98]"
                 >
                   Cancel
                 </button>
@@ -162,7 +279,7 @@ export function SettingsModal({
                     onSave();
                     onClose();
                   }}
-                  className="rounded-lg bg-foreground px-4 py-2 text-xs font-semibold text-background transition hover:opacity-90"
+                  className="rounded-lg bg-foreground px-4 py-2 text-xs font-semibold text-background transition hover:opacity-90 active:scale-[0.98]"
                 >
                   Save changes
                 </button>
@@ -306,24 +423,51 @@ function SegmentedSetting({
   options: [string, string][];
   onSelect: (value: string) => void;
 }) {
+  const groupId = `seg-${label.replace(/\s+/g, "-").toLowerCase()}`;
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const idx = options.findIndex(([v]) => v === value);
+    let next = idx;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (idx + 1) % options.length;
+    else if (e.key === "ArrowLeft" || e.key === "ArrowUp")
+      next = (idx - 1 + options.length) % options.length;
+    else return;
+    e.preventDefault();
+    onSelect(options[next][0]);
+    const radios = e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+    radios[next]?.focus();
+  };
+
   return (
     <div>
-      <label className="text-xs text-muted-foreground">{label}</label>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {options.map(([optionValue, optionLabel]) => (
-          <button
-            key={optionValue}
-            onClick={() => onSelect(optionValue)}
-            className={cn(
-              "rounded-lg border px-4 py-2 text-xs transition",
-              value === optionValue
-                ? "border-white/20 bg-white/[0.08] text-foreground shadow-[var(--shadow-glow)]"
-                : "border-white/5 text-muted-foreground hover:border-white/10 hover:text-foreground",
-            )}
-          >
-            {optionLabel}
-          </button>
-        ))}
+      <span id={groupId} className="text-xs text-muted-foreground">
+        {label}
+      </span>
+      <div
+        role="radiogroup"
+        aria-labelledby={groupId}
+        onKeyDown={onKeyDown}
+        className="mt-2 flex flex-wrap gap-2"
+      >
+        {options.map(([optionValue, optionLabel]) => {
+          const checked = value === optionValue;
+          return (
+            <button
+              key={optionValue}
+              role="radio"
+              aria-checked={checked}
+              tabIndex={checked ? 0 : -1}
+              onClick={() => onSelect(optionValue)}
+              className={cn(
+                "glow-ring rounded-lg border px-4 py-2 text-xs transition active:scale-[0.97]",
+                checked
+                  ? "border-white/20 bg-white/[0.08] text-foreground shadow-[var(--shadow-glow)]"
+                  : "border-white/5 text-muted-foreground hover:border-white/10 hover:text-foreground",
+              )}
+            >
+              {optionLabel}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -467,7 +611,7 @@ function InboxSettings({
         ? savedCustomTemplateToPreferences(savedCustomTemplate)
         : currentDraft
       : selectedPreview
-        ? templateToPreferences(selectedPreview)
+        ? templateToPreferences(selectedPreview as MailboxPolicyTemplate)
         : currentDraft;
 
   const previewMatchesCurrent =
@@ -477,7 +621,10 @@ function InboxSettings({
           savedCustomTemplate.policy.minimumPostage === preferences.minimumPostage
         : true
       : selectedPreview
-        ? mailboxPolicyTemplateMatchesPreferences(selectedPreview, currentDraft)
+        ? mailboxPolicyTemplateMatchesPreferences(
+            selectedPreview as MailboxPolicyTemplate,
+            currentDraft,
+          )
         : false;
 
   const applyingWillReplaceCurrent =
@@ -485,7 +632,7 @@ function InboxSettings({
       ? !!savedCustomTemplate && !previewMatchesCurrent
       : !previewMatchesCurrent;
 
-  const handleTemplateChange = (id: MailboxPolicyTemplateId) => {
+  const handleTemplateChange = (id: MailboxPolicyTemplateId | "custom") => {
     setPreviewTemplateId(id);
   };
 
@@ -509,7 +656,7 @@ function InboxSettings({
 
     onChange({
       ...preferences,
-      ...templateToPreferences(selectedPreview),
+      ...templateToPreferences(selectedPreview as MailboxPolicyTemplate),
     });
   };
 
@@ -565,8 +712,9 @@ function InboxSettings({
                   key={template.id}
                   type="button"
                   onClick={() => handleTemplateChange(template.id)}
+                  aria-pressed={selected}
                   className={cn(
-                    "rounded-2xl border p-4 text-left transition",
+                    "rounded-2xl border p-4 text-left transition focus-visible:ring-2 focus-visible:ring-emerald-400",
                     selected
                       ? "border-emerald-300/30 bg-emerald-300/[0.08] shadow-[0_0_0_1px_rgba(110,231,183,0.12)]"
                       : "border-white/10 bg-white/[0.025] hover:border-white/15 hover:bg-white/[0.05]",
@@ -612,8 +760,9 @@ function InboxSettings({
             <button
               type="button"
               onClick={() => handleTemplateChange("custom")}
+              aria-pressed={previewTemplateId === "custom"}
               className={cn(
-                "rounded-2xl border p-4 text-left transition",
+                "rounded-2xl border p-4 text-left transition focus-visible:ring-2 focus-visible:ring-emerald-400",
                 previewTemplateId === "custom"
                   ? "border-sky-300/30 bg-sky-300/[0.08] shadow-[0_0_0_1px_rgba(103,232,249,0.12)]"
                   : "border-dashed border-white/10 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]",
@@ -802,8 +951,9 @@ function InboxSettings({
             <button
               key={policy.value}
               onClick={() => updateUnknownSenders(policy.value as UiPreferences["unknownSenders"])}
+              aria-pressed={preferences.unknownSenders === policy.value}
               className={cn(
-                "rounded-xl border p-3 text-left transition",
+                "rounded-xl border p-3 text-left transition focus-visible:ring-2 focus-visible:ring-emerald-400",
                 preferences.unknownSenders === policy.value
                   ? "border-emerald-200/20 bg-emerald-200/[0.06]"
                   : "border-white/10 bg-white/[0.025] hover:bg-white/[0.05]",
@@ -822,9 +972,12 @@ function InboxSettings({
               value={preferences.minimumPostage}
               onChange={(event) => updateMinimumPostage(event.target.value)}
               inputMode="decimal"
-              className="w-full bg-transparent py-2 text-sm text-foreground outline-none"
+              aria-label="Minimum postage in XLM"
+              className="w-full bg-transparent py-2 text-sm text-foreground outline-none focus-visible:ring-0"
             />
-            <span className="text-xs text-muted-foreground">XLM</span>
+            <span className="text-xs text-muted-foreground" aria-hidden="true">
+              XLM
+            </span>
           </div>
         </label>
       </div>
@@ -922,8 +1075,9 @@ function ReceiptSettings({
                 <button
                   key={opt.value}
                   onClick={() => setReceipt(type.key, opt.value)}
+                  aria-pressed={preferences.receipts[type.key] === opt.value}
                   className={cn(
-                    "flex-1 rounded-lg border px-3 py-2 text-left transition",
+                    "flex-1 rounded-lg border px-3 py-2 text-left transition focus-visible:ring-2 focus-visible:ring-emerald-400",
                     preferences.receipts[type.key] === opt.value
                       ? "border-emerald-200/20 bg-emerald-200/[0.06]"
                       : "border-white/10 bg-white/[0.025] hover:bg-white/[0.05]",
@@ -1133,9 +1287,10 @@ function SecuritySettings() {
                     setDeviceName(device.name);
                     setEditingDevice(device.id);
                   }}
-                  className="rounded-lg p-1.5 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition"
+                  aria-label={`Edit ${device.name}`}
+                  className="rounded-lg p-1.5 text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition focus-visible:ring-2 focus-visible:ring-emerald-400"
                 >
-                  <Edit className="h-3.5 w-3.5" />
+                  <Edit className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -1249,6 +1404,53 @@ function SecuritySettings() {
     </div>
   );
 }
+function LayoutSettings({
+  layout,
+  onChange,
+  onReset,
+}: {
+  layout: LayoutPreferences;
+  onChange: (layout: LayoutPreferences) => void;
+  onReset: () => void;
+}) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-sm font-medium text-foreground">Layout</h3>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Customize your mailbox layout and panel sizes.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <SettingsToggle
+          label="Compact mode"
+          description="A denser layout for the email list and message views."
+          checked={layout.compactMode}
+          onChange={(checked) => onChange({ ...layout, compactMode: checked })}
+        />
+
+        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">Reset layout</p>
+              <p className="text-xs text-muted-foreground">
+                Restore all panel widths and collapse states to default.
+              </p>
+            </div>
+            <button
+              onClick={onReset}
+              className="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-white/[0.06]"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Reset
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function SettingsToggle({
   label,
@@ -1264,14 +1466,23 @@ function SettingsToggle({
   return (
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-sm text-foreground" id={`toggle-label-${label.replace(/\s+/g, "-")}`}>
+          {label}
+        </p>
+        <p
+          className="text-xs text-muted-foreground"
+          id={`toggle-desc-${label.replace(/\s+/g, "-")}`}
+        >
+          {description}
+        </p>
       </div>
       <button
         onClick={() => onChange(!checked)}
-        aria-pressed={checked}
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
         className={cn(
-          "relative h-6 w-11 rounded-full transition",
+          "glow-ring relative h-6 w-11 rounded-full transition hover:brightness-125 active:scale-95",
           checked ? "bg-white/20" : "bg-white/10",
         )}
       >

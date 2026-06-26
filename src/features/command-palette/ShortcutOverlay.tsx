@@ -28,18 +28,14 @@ export function ShortcutOverlay({ open, onClose }: Props) {
   const shortcuts = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return SHORTCUT_DEFINITIONS;
-    return SHORTCUT_DEFINITIONS.filter((shortcut) =>
-      [
-        shortcut.label,
-        shortcut.description,
-        shortcut.keys.join(" "),
-        shortcut.keywords.join(" "),
-        shortcut.conflict ?? "",
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(q),
-    );
+    return SHORTCUT_DEFINITIONS.filter((shortcut) => {
+      if (shortcut.label.toLowerCase().includes(q)) return true;
+      if (shortcut.description.toLowerCase().includes(q)) return true;
+      if (shortcut.keywords.some((k) => k.toLowerCase().includes(q))) return true;
+      if (shortcut.keys.some((k) => k.toLowerCase().includes(q))) return true;
+      if (shortcut.conflict?.toLowerCase().includes(q)) return true;
+      return false;
+    });
   }, [query]);
 
   return (
@@ -76,7 +72,7 @@ export function ShortcutOverlay({ open, onClose }: Props) {
                   </p>
                 </div>
               </div>
-              <div className="mt-4 flex items-center gap-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
+              <div className="mt-4 flex items-center gap-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3 transition focus-within:border-white/20 focus-within:bg-black/30">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <input
                   autoFocus
@@ -102,7 +98,9 @@ export function ShortcutOverlay({ open, onClose }: Props) {
                     >
                       <div className="flex flex-wrap items-center gap-3">
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-medium text-foreground">{shortcut.label}</div>
+                          <div className="text-sm font-medium text-foreground">
+                            {shortcut.label}
+                          </div>
                           <div className="mt-1 text-xs leading-5 text-muted-foreground">
                             {shortcut.description}
                           </div>

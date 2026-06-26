@@ -94,7 +94,14 @@ export function Topbar({
   }, [notificationsOpen]);
 
   useEffect(() => {
-    const onResize = () => {
+    // Only subscribe to global scroll/resize while a dropdown is actually open.
+    // The scroll listener uses capture, so without this gate it would fire on
+    // every scroll anywhere in the app (e.g. the email list and reader panes)
+    // even when there is no open panel to reposition.
+    const anyOpen = filterOpen || accountOpen || helpOpen || notificationsOpen;
+    if (!anyOpen) return;
+
+    const onReposition = () => {
       if (filterOpen && filterRef.current) setFilterRect(filterRef.current.getBoundingClientRect());
       if (accountOpen && accountRef.current)
         setAccountRect(accountRef.current.getBoundingClientRect());
@@ -102,19 +109,17 @@ export function Topbar({
       if (notificationsOpen && notificationsRef.current)
         setNotifRect(notificationsRef.current.getBoundingClientRect());
     };
-    window.addEventListener("resize", onResize);
-    window.addEventListener("scroll", onResize, true);
+    window.addEventListener("resize", onReposition);
+    window.addEventListener("scroll", onReposition, true);
     return () => {
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("scroll", onResize, true);
+      window.removeEventListener("resize", onReposition);
+      window.removeEventListener("scroll", onReposition, true);
     };
   }, [filterOpen, accountOpen, helpOpen, notificationsOpen]);
 
   return (
     <header className="glass relative z-50 m-0 flex h-14 items-center gap-2 overflow-hidden rounded-none border-t-0 px-3">
-      <motion.div
-        className="relative flex h-9 min-w-[220px] flex-[1_1_320px] items-center lg:max-w-[430px]"
-      >
+      <motion.div className="relative flex h-9 min-w-[220px] flex-[1_1_320px] items-center lg:max-w-[430px]">
         <Search className="pointer-events-none absolute left-3 h-4 w-4 text-muted-foreground" />
         <input
           onFocus={() => setFocused(true)}
@@ -283,7 +288,12 @@ export function Topbar({
         </IconBtn>
 
         <div ref={helpRef} className="relative">
-          <IconBtn label="Help" onClick={() => setHelpOpen((open) => !open)} active={helpOpen} hint="?">
+          <IconBtn
+            label="Help"
+            onClick={() => setHelpOpen((open) => !open)}
+            active={helpOpen}
+            hint="?"
+          >
             <CircleHelp className="h-4 w-4" />
           </IconBtn>
         </div>
@@ -350,7 +360,7 @@ export function Topbar({
           <button
             onClick={() => setAccountOpen(!accountOpen)}
             className={cn(
-              "flex items-center gap-2 rounded-[6px] border border-white/5 bg-white/[0.04] px-2 py-1.5 text-xs text-foreground transition hover:bg-white/[0.08]",
+              "glow-ring flex items-center gap-2 rounded-[6px] border border-white/5 bg-white/[0.04] px-2 py-1.5 text-xs text-foreground transition hover:bg-white/[0.08]",
               accountOpen && "bg-white/[0.08]",
             )}
           >
@@ -484,7 +494,7 @@ function IconBtn({
       aria-label={label}
       onClick={onClick}
       className={cn(
-        "rounded-[6px] p-2 text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground",
+        "glow-ring rounded-[6px] p-2 text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground",
         "inline-flex items-center gap-1.5",
         active && "bg-white/[0.06] text-foreground",
       )}
@@ -515,7 +525,7 @@ function QuickAction({
       whileTap={{ scale: 0.94 }}
       aria-label={label}
       onClick={onClick}
-      className="group glass-tile flex h-9 items-center gap-2 rounded-[6px] px-2.5 text-xs text-muted-foreground transition hover:text-foreground"
+      className="group glow-ring glass-tile flex h-9 items-center gap-2 rounded-[6px] px-2.5 text-xs text-muted-foreground transition hover:text-foreground"
     >
       <Icon className="h-4 w-4" />
       <span className="hidden 2xl:inline">{label}</span>

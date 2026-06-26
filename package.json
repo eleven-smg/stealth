@@ -17,7 +17,11 @@
     "local:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-local-env/setup.ps1",
     "local:teardown": "powershell -ExecutionPolicy Bypass -File scripts/setup-local-env/teardown.ps1",
     "local:setup:unix": "bash scripts/setup-local-env/setup.sh",
-    "local:teardown:unix": "bash scripts/setup-local-env/teardown.sh"
+    "local:teardown:unix": "bash scripts/setup-local-env/teardown.sh",
+    "generate:bindings": "node scripts/generate-contract-bindings.mjs"
+  },
+  "overrides": {
+    "ws": "8.21.0"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
@@ -49,6 +53,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@stellar/freighter-api": "^6.0.1",
+    "@stellar/stellar-sdk": "^16.0.0",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-router": "^1.168.0",
@@ -79,6 +84,9 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@playwright/test": "^1.49.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
@@ -89,6 +97,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
+    "jsdom": "^29.1.1",
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
