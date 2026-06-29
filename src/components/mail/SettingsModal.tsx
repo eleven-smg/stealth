@@ -596,51 +596,71 @@ function InboxSettings({
     setPreviewTemplateId(findMailboxPolicyTemplate(preferences)?.id ?? "custom");
   }, [open, preferences]);
 
-  const currentDraft = useMemo(() => ({
-    unknownSenders: preferences.unknownSenders,
-    minimumPostage: preferences.minimumPostage,
-  }), [preferences.unknownSenders, preferences.minimumPostage]);
+  const currentDraft = useMemo(
+    () => ({
+      unknownSenders: preferences.unknownSenders,
+      minimumPostage: preferences.minimumPostage,
+    }),
+    [preferences.unknownSenders, preferences.minimumPostage],
+  );
 
   const liveTemplate = useMemo(() => findMailboxPolicyTemplate(currentDraft), [currentDraft]);
 
-  const selectedPreview = useMemo(() => 
-    previewTemplateId === "custom"
-      ? (savedCustomTemplate ??
-        buildCustomMailboxPolicyTemplate(currentDraft, liveTemplate?.id ?? null))
-      : (MAILBOX_POLICY_TEMPLATES.find((template) => template.id === previewTemplateId) ?? null),
-  [previewTemplateId, savedCustomTemplate, currentDraft, liveTemplate?.id]);
+  const selectedPreview = useMemo(
+    () =>
+      previewTemplateId === "custom"
+        ? (savedCustomTemplate ??
+          buildCustomMailboxPolicyTemplate(currentDraft, liveTemplate?.id ?? null))
+        : (MAILBOX_POLICY_TEMPLATES.find((template) => template.id === previewTemplateId) ?? null),
+    [previewTemplateId, savedCustomTemplate, currentDraft, liveTemplate?.id],
+  );
 
-  const selectedPreferences = useMemo(() => 
-    previewTemplateId === "custom"
-      ? savedCustomTemplate
-        ? savedCustomTemplateToPreferences(savedCustomTemplate)
-        : currentDraft
-      : selectedPreview
-        ? templateToPreferences(selectedPreview as MailboxPolicyTemplate)
-        : currentDraft;
+  const selectedPreferences = useMemo(
+    () =>
+      previewTemplateId === "custom"
+        ? savedCustomTemplate
+          ? savedCustomTemplateToPreferences(savedCustomTemplate)
+          : currentDraft
+        : selectedPreview
+          ? templateToPreferences(selectedPreview as MailboxPolicyTemplate)
+          : currentDraft,
+    [previewTemplateId, savedCustomTemplate, currentDraft, selectedPreview],
+  );
 
-  const previewMatchesCurrent = useMemo(() => 
-    previewTemplateId === "custom"
-      ? savedCustomTemplate
-        ? savedCustomTemplate.policy.unknownSenders === preferences.unknownSenders &&
-          savedCustomTemplate.policy.minimumPostage === preferences.minimumPostage
-        : true
-      : selectedPreview
-        ? mailboxPolicyTemplateMatchesPreferences(
-            selectedPreview as MailboxPolicyTemplate,
-            currentDraft,
-          )
-        : false;
+  const previewMatchesCurrent = useMemo(
+    () =>
+      previewTemplateId === "custom"
+        ? savedCustomTemplate
+          ? savedCustomTemplate.policy.unknownSenders === preferences.unknownSenders &&
+            savedCustomTemplate.policy.minimumPostage === preferences.minimumPostage
+          : true
+        : selectedPreview
+          ? mailboxPolicyTemplateMatchesPreferences(
+              selectedPreview as MailboxPolicyTemplate,
+              currentDraft,
+            )
+          : false,
+    [
+      previewTemplateId,
+      savedCustomTemplate,
+      preferences.unknownSenders,
+      preferences.minimumPostage,
+      selectedPreview,
+      currentDraft,
+    ],
+  );
 
-  const applyingWillReplaceCurrent = useMemo(() => 
-    previewTemplateId === "custom"
-      ? !!savedCustomTemplate && !previewMatchesCurrent
-      : !previewMatchesCurrent,
-  [previewTemplateId, savedCustomTemplate, previewMatchesCurrent]);
+  const applyingWillReplaceCurrent = useMemo(
+    () =>
+      previewTemplateId === "custom"
+        ? !!savedCustomTemplate && !previewMatchesCurrent
+        : !previewMatchesCurrent,
+    [previewTemplateId, savedCustomTemplate, previewMatchesCurrent],
+  );
 
   const handleTemplateChange = (id: MailboxPolicyTemplateId | "custom") => {
     setPreviewTemplateId(id);
-  }, []);
+  };
 
   const handleApply = useCallback(() => {
     if (!selectedPreview) return;
@@ -664,7 +684,15 @@ function InboxSettings({
       ...preferences,
       ...templateToPreferences(selectedPreview as MailboxPolicyTemplate),
     });
-  }, [selectedPreview, previewTemplateId, savedCustomTemplate, currentDraft, liveTemplate?.id, onChange, preferences]);
+  }, [
+    selectedPreview,
+    previewTemplateId,
+    savedCustomTemplate,
+    currentDraft,
+    liveTemplate?.id,
+    onChange,
+    preferences,
+  ]);
 
   const handleSaveCustom = useCallback(() => {
     setSavedCustomTemplate(
@@ -673,21 +701,27 @@ function InboxSettings({
     setPreviewTemplateId("custom");
   }, [currentDraft, liveTemplate?.id]);
 
-  const updateUnknownSenders = useCallback((unknownSenders: UiPreferences["unknownSenders"]) => {
-    setPreviewTemplateId("custom");
-    onChange({
-      ...preferences,
-      unknownSenders,
-    });
-  }, [onChange, preferences]);
+  const updateUnknownSenders = useCallback(
+    (unknownSenders: UiPreferences["unknownSenders"]) => {
+      setPreviewTemplateId("custom");
+      onChange({
+        ...preferences,
+        unknownSenders,
+      });
+    },
+    [onChange, preferences],
+  );
 
-  const updateMinimumPostage = useCallback((minimumPostage: string) => {
-    setPreviewTemplateId("custom");
-    onChange({
-      ...preferences,
-      minimumPostage,
-    });
-  }, [onChange, preferences]);
+  const updateMinimumPostage = useCallback(
+    (minimumPostage: string) => {
+      setPreviewTemplateId("custom");
+      onChange({
+        ...preferences,
+        minimumPostage,
+      });
+    },
+    [onChange, preferences],
+  );
 
   return (
     <div className="space-y-6">
