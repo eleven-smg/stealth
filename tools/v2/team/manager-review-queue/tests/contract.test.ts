@@ -64,7 +64,10 @@ describe("review queue contract — fetch (failure)", () => {
 describe("review queue contract — updateStatus (success)", () => {
   it("moves a pending item to approved", async () => {
     const contract = createReviewQueueContract(undefined, 0);
-    const res = await contract.execute({ operation: "updateStatus", input: VALID_UPDATE_STATUS_INPUT });
+    const res = await contract.execute({
+      operation: "updateStatus",
+      input: VALID_UPDATE_STATUS_INPUT,
+    });
     expect(res.ok).toBe(true);
     if (res.ok && res.value.operation === "updateStatus") {
       expect(res.value.item.status).toBe("approved");
@@ -75,14 +78,20 @@ describe("review queue contract — updateStatus (success)", () => {
 describe("review queue contract — updateStatus (failure)", () => {
   it("rejects a missing itemId", async () => {
     const contract = createReviewQueueContract(undefined, 0);
-    const res = await contract.execute({ operation: "updateStatus", input: MISSING_ITEM_ID_UPDATE_INPUT });
+    const res = await contract.execute({
+      operation: "updateStatus",
+      input: MISSING_ITEM_ID_UPDATE_INPUT,
+    });
     expect(res.ok).toBe(false);
     if (!res.ok) expect(res.error).toBe(ReviewErrorCode.InvalidInput);
   });
 
   it("returns ItemNotFound for an unknown id", async () => {
     const contract = createReviewQueueContract(undefined, 0);
-    const res = await contract.execute({ operation: "updateStatus", input: UNKNOWN_ITEM_UPDATE_INPUT });
+    const res = await contract.execute({
+      operation: "updateStatus",
+      input: UNKNOWN_ITEM_UPDATE_INPUT,
+    });
     expect(res.ok).toBe(false);
     if (!res.ok) expect(res.error).toBe(ReviewErrorCode.ItemNotFound);
   });

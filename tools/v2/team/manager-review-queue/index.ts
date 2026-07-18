@@ -26,7 +26,12 @@ export {
   ok,
   fail,
 } from "./contract";
-export type { ReviewContract, ReviewOperation, ReviewContractOutput, ReviewResult } from "./contract";
+export type {
+  ReviewContract,
+  ReviewOperation,
+  ReviewContractOutput,
+  ReviewResult,
+} from "./contract";
 
 // Service (concrete, fixture-backed contract implementation)
 export { createReviewQueueContract } from "./services/execution.service";

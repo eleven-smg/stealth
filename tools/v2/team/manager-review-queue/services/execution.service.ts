@@ -7,7 +7,12 @@
  */
 
 import type { ReviewItem } from "../types";
-import type { ReviewContract, ReviewOperation, ReviewContractOutput, ReviewResult } from "../contract";
+import type {
+  ReviewContract,
+  ReviewOperation,
+  ReviewContractOutput,
+  ReviewResult,
+} from "../contract";
 import { applyReviewOperation } from "../contract";
 import { mockQueueItems, MOCK_NETWORK_DELAY_MS } from "../fixtures/reviewFixtures";
 

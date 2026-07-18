@@ -9,7 +9,12 @@
  * enums, and types. We have replaced it with the actual execution contract logic.
  */
 
-import type { ReviewItem, FetchQueueInput, FetchQueueOutput, UpdateReviewStatusInput } from "./types";
+import type {
+  ReviewItem,
+  FetchQueueInput,
+  FetchQueueOutput,
+  UpdateReviewStatusInput,
+} from "./types";
 
 export enum ReviewErrorCode {
   InvalidInput = "INVALID_INPUT",
@@ -52,7 +57,10 @@ export function validateFetchInput(input: FetchQueueInput): ReviewResult<FetchQu
       return fail(ReviewErrorCode.InvalidInput, "Limit must be a non-negative number");
     }
     if (input.limit > MAX_QUEUE_SIZE) {
-      return fail(ReviewErrorCode.InvalidInput, `Limit exceeds maximum queue size of ${MAX_QUEUE_SIZE}`);
+      return fail(
+        ReviewErrorCode.InvalidInput,
+        `Limit exceeds maximum queue size of ${MAX_QUEUE_SIZE}`,
+      );
     }
   }
   if (input.offset !== undefined) {
@@ -63,7 +71,9 @@ export function validateFetchInput(input: FetchQueueInput): ReviewResult<FetchQu
   return ok(input);
 }
 
-export function validateUpdateStatusInput(input: UpdateReviewStatusInput): ReviewResult<UpdateReviewStatusInput> {
+export function validateUpdateStatusInput(
+  input: UpdateReviewStatusInput,
+): ReviewResult<UpdateReviewStatusInput> {
   if (!input) {
     return fail(ReviewErrorCode.InvalidInput, "Input is required");
   }
@@ -72,7 +82,10 @@ export function validateUpdateStatusInput(input: UpdateReviewStatusInput): Revie
   }
   const allowedStatuses = ["pending", "approved", "rejected", "escalated"];
   if (!input.newStatus || !allowedStatuses.includes(input.newStatus)) {
-    return fail(ReviewErrorCode.InvalidInput, `newStatus must be one of: ${allowedStatuses.join(", ")}`);
+    return fail(
+      ReviewErrorCode.InvalidInput,
+      `newStatus must be one of: ${allowedStatuses.join(", ")}`,
+    );
   }
   return ok(input);
 }
@@ -125,7 +138,10 @@ export function applyReviewOperation(
     }
 
     if (item.status === "approved" || item.status === "rejected") {
-      return fail(ReviewErrorCode.InvalidTransition, `Cannot change status of item in terminal state: ${item.status}`);
+      return fail(
+        ReviewErrorCode.InvalidTransition,
+        `Cannot change status of item in terminal state: ${item.status}`,
+      );
     }
 
     // Update item status in store
