@@ -13,7 +13,7 @@ export class ExecutionService {
           error: {
             code: ExecutionErrorCode.INVALID_INPUT,
             message: "Missing execution action",
-          }
+          },
         };
       }
 
@@ -30,7 +30,7 @@ export class ExecutionService {
             error: {
               code: ExecutionErrorCode.ACTION_NOT_SUPPORTED,
               message: `Action ${input.action} is not supported`,
-            }
+            },
           };
       }
     } catch (error) {
@@ -39,7 +39,7 @@ export class ExecutionService {
         error: {
           code: ExecutionErrorCode.INTERNAL_ERROR,
           message: error instanceof Error ? error.message : "Unknown internal error",
-        }
+        },
       };
     }
   }
@@ -50,16 +50,16 @@ export class ExecutionService {
         success: false,
         error: {
           code: ExecutionErrorCode.INVALID_INPUT,
-          message: "vendorId is required for TRACK_MAIL"
-        }
+          message: "vendorId is required for TRACK_MAIL",
+        },
       };
     }
     return {
       success: true,
       data: {
         tracked: true,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     };
   }
 
@@ -69,8 +69,8 @@ export class ExecutionService {
         success: false,
         error: {
           code: ExecutionErrorCode.INVALID_INPUT,
-          message: "vendorId and payload.status are required for UPDATE_VENDOR_STATUS"
-        }
+          message: "vendorId and payload.status are required for UPDATE_VENDOR_STATUS",
+        },
       };
     }
     return {
@@ -78,8 +78,8 @@ export class ExecutionService {
       data: {
         vendorId: input.vendorId,
         status: input.payload.status,
-        updated: true
-      }
+        updated: true,
+      },
     };
   }
 
@@ -89,16 +89,16 @@ export class ExecutionService {
         success: false,
         error: {
           code: ExecutionErrorCode.INVALID_INPUT,
-          message: "vendorId is required for GET_VENDOR_STATS"
-        }
+          message: "vendorId is required for GET_VENDOR_STATS",
+        },
       };
     }
     return {
       success: true,
       data: {
         vendorId: input.vendorId,
-        totalMessages: 42
-      }
+        totalMessages: 42,
+      },
     };
   }
 }
