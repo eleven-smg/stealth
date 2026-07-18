@@ -17,6 +17,14 @@ the read timestamp. Both transitions emit events for relays and clients.
 - `configure_guard(guard)` binds the lifecycle guard contract once.
 - `guard()` returns the configured guard address.
 
+## Events
+
+`delivered` and `read` are emitted once per transition with the message id as
+a topic and the full receipt as the data payload. The complete wire schema —
+topic layout, data encoding, ordering, and stability guarantees for off-chain
+consumers — is documented in `docs/events.md` and pinned by the
+`event_schema` tests in `src/lib.rs`.
+
 ## Authorization boundaries
 
 - `delivered` requires the sender's authorization, and the signature is bound

@@ -685,3 +685,232 @@ mod test {
         );
     }
 }
+
+#[cfg(test)]
+mod event_schema {
+    // Event schema pinning tests.
+    //
+    // Off-chain consumers (relays, indexers, clients) filter and decode these
+    // events straight from the ledger, so their wire format is a public
+    // contract. These tests pin the exact topic vector and data payload; any
+    // change to the event structs, topic layout, or data format fails here
+    // before it can silently break integrators. The schema is documented in
+    // docs/events.md.
+    extern crate std;
+
+    use super::*;
+    use soroban_sdk::{
+        testutils::{Address as _, Events, Ledger},
+        xdr::{ContractEventBody, ScSymbol, ScVal},
+        Event as _,
+    };
+    use stealth_lifecycle::{LifecycleContract, LifecycleContractClient};
+    use stealth_policies::{MailboxPolicy, PoliciesContract, PoliciesContractClient};
+
+    fn hash(env: &Env, byte: u8) -> BytesN<32> {
+        BytesN::from_array(env, &[byte; 32])
+    }
+
+    fn configure_lifecycle(
+        env: &Env,
+        receipts: &Address,
+        message_id: &BytesN<32>,
+        sender: &Address,
+        recipient: &Address,
+    ) {
+        let policies = env.register(PoliciesContract, ());
+        let policies_client = PoliciesContractClient::new(env, &policies);
+        policies_client.set_policy(
+            &recipient.clone(),
+            &MailboxPolicy {
+                allow_unknown: true,
+                require_verified: false,
+                require_receipt: false,
+                minimum_postage: 0,
+            },
+        );
+
+        let postage = Address::generate(env);
+        let lifecycle = env.register(LifecycleContract, ());
+        let lifecycle_client = LifecycleContractClient::new(env, &lifecycle);
+        lifecycle_client.initialize(&policies, &postage, receipts);
+        ReceiptsContractClient::new(env, receipts).configure_guard(&lifecycle);
+        lifecycle_client.bind(
+            message_id,
+            &recipient.clone(),
+            &sender.clone(),
+            &recipient.clone(),
+            &0_i128,
+            &false,
+            &true,
+        );
+    }
+
+    #[test]
+    fn delivered_and_read_emit_schema_stable_events() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register(ReceiptsContract, ());
+        let client = ReceiptsContractClient::new(&env, &contract_id);
+        let sender = Address::generate(&env);
+        let recipient = Address::generate(&env);
+        let message_id = hash(&env, 7);
+        let payload_hash = hash(&env, 8);
+        configure_lifecycle(&env, &contract_id, &message_id, &sender, &recipient);
+
+        env.ledger().set_timestamp(10);
+        let delivered = client.delivered(&message_id, &payload_hash, &1, &sender, &recipient);
+        assert_eq!(
+            env.events().all().filter_by_contract(&contract_id),
+            std::vec![Delivered {
+                message_id: message_id.clone(),
+                receipt: delivered,
+            }
+            .to_xdr(&env, &contract_id)]
+        );
+
+        env.ledger().set_timestamp(20);
+        let read = client.read(&message_id);
+        assert_eq!(
+            env.events().all().filter_by_contract(&contract_id),
+            std::vec![Read {
+                message_id: message_id.clone(),
+                receipt: read,
+            }
+            .to_xdr(&env, &contract_id)]
+        );
+    }
+
+    #[test]
+    fn delivered_event_wire_format_is_pinned() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register(ReceiptsContract, ());
+        let client = ReceiptsContractClient::new(&env, &contract_id);
+        let sender = Address::generate(&env);
+        let recipient = Address::generate(&env);
+        let message_id = hash(&env, 7);
+        let payload_hash = hash(&env, 8);
+        configure_lifecycle(&env, &contract_id, &message_id, &sender, &recipient);
+
+        env.ledger().set_timestamp(10);
+        let receipt = client.delivered(&message_id, &payload_hash, &1, &sender, &recipient);
+
+        let filtered = env.events().all().filter_by_contract(&contract_id);
+        let events = filtered.events();
+        assert_eq!(events.len(), 1);
+        let ContractEventBody::V0(body) = &events[0].body;
+
+        // Topics: [symbol "delivered", message_id]. The event-name symbol is
+        // derived from the struct name; the message id is the only #[topic]
+        // field, so consumers can filter by message without decoding data.
+        assert_eq!(body.topics.len(), 2);
+        assert_eq!(
+            body.topics[0],
+            ScVal::Symbol(ScSymbol("delivered".try_into().unwrap()))
+        );
+        assert_eq!(
+            body.topics[1],
+            ScVal::Bytes(message_id.to_array().to_vec().try_into().unwrap())
+        );
+
+        // Data: the Receipt struct as a bare value (data_format =
+        // "single-value"), an ScMap with field names as symbol keys sorted
+        // alphabetically per SCMap canonical ordering.
+        let ScVal::Map(Some(map)) = &body.data else {
+            std::panic!("event data must be a single map value, got {:?}", body.data);
+        };
+        let keys: std::vec::Vec<std::string::String> = map
+            .iter()
+            .map(|entry| match &entry.key {
+                ScVal::Symbol(symbol) => symbol.to_utf8_string_lossy(),
+                other => std::panic!("map keys must be symbols, got {other:?}"),
+            })
+            .collect();
+        assert_eq!(
+            keys,
+            std::vec![
+                "delivered_at",
+                "message_id",
+                "payload_hash",
+                "protocol_version",
+                "read_at",
+                "recipient",
+                "sender",
+            ]
+        );
+        assert_eq!(map.len(), 7);
+        assert_eq!(receipt.delivered_at, 10);
+    }
+
+    #[test]
+    fn read_event_reuses_the_delivered_topic_shape() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register(ReceiptsContract, ());
+        let client = ReceiptsContractClient::new(&env, &contract_id);
+        let sender = Address::generate(&env);
+        let recipient = Address::generate(&env);
+        let message_id = hash(&env, 7);
+        configure_lifecycle(&env, &contract_id, &message_id, &sender, &recipient);
+
+        client.delivered(&message_id, &hash(&env, 8), &1, &sender, &recipient);
+        env.ledger().set_timestamp(20);
+        client.read(&message_id);
+
+        let filtered = env.events().all().filter_by_contract(&contract_id);
+        let events = filtered.events();
+        assert_eq!(events.len(), 1);
+        let ContractEventBody::V0(body) = &events[0].body;
+        assert_eq!(body.topics.len(), 2);
+        assert_eq!(
+            body.topics[0],
+            ScVal::Symbol(ScSymbol("read".try_into().unwrap()))
+        );
+        // read_at is set in the event payload, so consumers never observe a
+        // read event whose receipt still looks undelivered.
+        let ScVal::Map(Some(map)) = &body.data else {
+            std::panic!("event data must be a single map value");
+        };
+        let read_at = map
+            .iter()
+            .find(|entry| entry.key == ScVal::Symbol(ScSymbol("read_at".try_into().unwrap())))
+            .expect("read_at key present");
+        assert_ne!(read_at.val, ScVal::Void);
+    }
+
+    #[test]
+    fn failed_calls_emit_no_events() {
+        let env = Env::default();
+        env.mock_all_auths();
+        let contract_id = env.register(ReceiptsContract, ());
+        let client = ReceiptsContractClient::new(&env, &contract_id);
+        let sender = Address::generate(&env);
+        let recipient = Address::generate(&env);
+        let message_id = hash(&env, 7);
+
+        // Guard not configured: delivered fails and publishes nothing.
+        assert!(client
+            .try_delivered(&message_id, &hash(&env, 8), &1, &sender, &recipient)
+            .is_err());
+        assert_eq!(
+            env.events()
+                .all()
+                .filter_by_contract(&contract_id)
+                .events()
+                .len(),
+            0
+        );
+
+        // Unknown message: read fails and publishes nothing.
+        assert!(client.try_read(&hash(&env, 9)).is_err());
+        assert_eq!(
+            env.events()
+                .all()
+                .filter_by_contract(&contract_id)
+                .events()
+                .len(),
+            0
+        );
+    }
+}
