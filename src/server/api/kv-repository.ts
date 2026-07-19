@@ -47,13 +47,51 @@ export class HybridApiRepository implements ApiRepository {
   }
 
   async getReceipt(messageId: string): Promise<Receipt | null> {
+    const coordinatedReceipt = await this.getStub().getReceipt(messageId);
+    if (coordinatedReceipt) return coordinatedReceipt;
+
     const receipt = await this.kv.get(this.key("receipt", messageId), "json");
-    return (receipt as Receipt) ?? null;
+    if (!receipt) return null;
+
+    await this.getStub().setReceipt(receipt as Receipt);
+    return receipt as Receipt;
   }
 
   async setReceipt(receipt: Receipt): Promise<Receipt> {
+    await this.getStub().setReceipt(receipt);
     await this.kv.put(this.key("receipt", receipt.messageId), JSON.stringify(receipt));
     return receipt;
+  }
+
+  async createReceiptIfAbsent(receipt: Receipt): Promise<{ created: boolean; receipt: Receipt }> {
+    const existing = await this.getReceipt(receipt.messageId);
+    if (existing) return { created: false, receipt: existing };
+
+    const result = await this.getStub().createReceiptIfAbsent(receipt);
+    if (result.created) {
+      await this.kv.put(
+        this.key("receipt", result.receipt.messageId),
+        JSON.stringify(result.receipt),
+      );
+    }
+    return result;
+  }
+
+  async markReceiptRead(
+    messageId: string,
+    readAt: string,
+  ): Promise<{ receipt: Receipt; updated: boolean } | null> {
+    await this.getReceipt(messageId);
+    const result = await this.getStub().markReceiptRead(messageId, readAt);
+    if (!result) return null;
+
+    if (result.updated) {
+      await this.kv.put(
+        this.key("receipt", result.receipt.messageId),
+        JSON.stringify(result.receipt),
+      );
+    }
+    return result;
   }
 
   // Consistent layer delegated to Durable Object via RPC

@@ -1,4 +1,4 @@
-import type { IdempotencyRecord } from "./domain";
+import type { IdempotencyRecord, Receipt } from "./domain";
 
 const DurableObjectBase: any = import.meta.env.PROD
   ? (await import("cloudflare:workers")).DurableObject
@@ -25,6 +25,37 @@ export class StealthCoordinator extends DurableObjectBase {
 
   async setIdempotencyRecord(key: string, record: IdempotencyRecord): Promise<void> {
     await this.ctx.storage.put(`idempotency:${key}`, record);
+  }
+
+  async getReceipt(messageId: string): Promise<Receipt | null> {
+    const receipt = (await this.ctx.storage.get(`receipt:${messageId}`)) as Receipt | undefined;
+    return receipt ?? null;
+  }
+
+  async setReceipt(receipt: Receipt): Promise<Receipt> {
+    await this.ctx.storage.put(`receipt:${receipt.messageId}`, receipt);
+    return receipt;
+  }
+
+  async createReceiptIfAbsent(receipt: Receipt): Promise<{ created: boolean; receipt: Receipt }> {
+    const existing = await this.getReceipt(receipt.messageId);
+    if (existing) return { created: false, receipt: existing };
+
+    await this.ctx.storage.put(`receipt:${receipt.messageId}`, receipt);
+    return { created: true, receipt };
+  }
+
+  async markReceiptRead(
+    messageId: string,
+    readAt: string,
+  ): Promise<{ receipt: Receipt; updated: boolean } | null> {
+    const receipt = await this.getReceipt(messageId);
+    if (!receipt) return null;
+    if (receipt.readAt) return { receipt, updated: false };
+
+    const updated = { ...receipt, readAt };
+    await this.ctx.storage.put(`receipt:${messageId}`, updated);
+    return { receipt: updated, updated: true };
   }
 
   async getCounter(key: string): Promise<number> {

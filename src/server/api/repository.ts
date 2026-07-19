@@ -9,6 +9,11 @@ export interface ApiRepository {
   setPostage(postage: Postage): Promise<Postage>;
   getReceipt(messageId: string): Promise<Receipt | null>;
   setReceipt(receipt: Receipt): Promise<Receipt>;
+  createReceiptIfAbsent(receipt: Receipt): Promise<{ created: boolean; receipt: Receipt }>;
+  markReceiptRead(messageId: string, readAt: string): Promise<{
+    receipt: Receipt;
+    updated: boolean;
+  } | null>;
   getIdempotencyRecord(key: string): Promise<IdempotencyRecord | null>;
   setIdempotencyRecord(key: string, record: IdempotencyRecord): Promise<void>;
 

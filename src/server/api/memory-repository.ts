@@ -12,6 +12,27 @@ export class MemoryApiRepository implements ApiRepository {
   private readonly senderRules = new Map<string, SenderRule>();
   private readonly counters = new Map<string, number[]>();
   private readonly idempotency = new Map<string, IdempotencyRecord>();
+  private readonly receiptLocks = new Map<string, Promise<void>>();
+
+  private async withReceiptLock<T>(messageId: string, action: () => Promise<T>): Promise<T> {
+    const previous = this.receiptLocks.get(messageId) ?? Promise.resolve();
+    let release!: () => void;
+    const current = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const queued = previous.then(() => current);
+    this.receiptLocks.set(messageId, queued);
+
+    await previous;
+    try {
+      return await action();
+    } finally {
+      release();
+      if (this.receiptLocks.get(messageId) === queued) {
+        this.receiptLocks.delete(messageId);
+      }
+    }
+  }
 
   async getPolicy(owner: string) {
     return structuredClone(this.policies.get(owner) ?? null);
@@ -49,6 +70,28 @@ export class MemoryApiRepository implements ApiRepository {
   async setReceipt(receipt: Receipt) {
     this.receipts.set(receipt.messageId, structuredClone(receipt));
     return structuredClone(receipt);
+  }
+
+  async createReceiptIfAbsent(receipt: Receipt) {
+    return this.withReceiptLock(receipt.messageId, async () => {
+      const existing = this.receipts.get(receipt.messageId);
+      if (existing) return { created: false, receipt: structuredClone(existing) };
+
+      this.receipts.set(receipt.messageId, structuredClone(receipt));
+      return { created: true, receipt: structuredClone(receipt) };
+    });
+  }
+
+  async markReceiptRead(messageId: string, readAt: string) {
+    return this.withReceiptLock(messageId, async () => {
+      const receipt = this.receipts.get(messageId);
+      if (!receipt) return null;
+      if (receipt.readAt) return { receipt: structuredClone(receipt), updated: false };
+
+      const updated = { ...receipt, readAt };
+      this.receipts.set(messageId, structuredClone(updated));
+      return { receipt: structuredClone(updated), updated: true };
+    });
   }
 
   async getRelayQueueDepth(_relayId: string) {
@@ -100,5 +143,6 @@ export class MemoryApiRepository implements ApiRepository {
     this.senderRules.clear();
     this.counters.clear();
     this.idempotency.clear();
+    this.receiptLocks.clear();
   }
 }
