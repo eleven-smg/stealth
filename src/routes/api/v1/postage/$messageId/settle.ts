@@ -78,8 +78,20 @@ export const Route = createFileRoute("/api/v1/postage/$messageId/settle")({
           } catch (error) {
             // Record terminal-state errors for idempotent replay
             // This ensures retry-after-failure returns the same error
-            if (rawIdempotencyKey && error instanceof Error && "status" in error) {
-              const apiError = error as { status: number; code: string; message: string; details?: unknown };
+            if (
+              rawIdempotencyKey &&
+              error &&
+              typeof error === "object" &&
+              "status" in error &&
+              "code" in error &&
+              "message" in error
+            ) {
+              const apiError = error as {
+                status: number;
+                code: string;
+                message: string;
+                details?: unknown;
+              };
               // Only cache terminal-state errors (409 conflict), not transient failures
               if (apiError.status === 409) {
                 await recordIdempotency(repository, current.recipient, rawIdempotencyKey, 409, {
