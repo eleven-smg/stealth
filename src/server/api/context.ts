@@ -59,13 +59,25 @@ export async function getApiContext(): Promise<ApiContext> {
   }
 
   const { env } = await import("cloudflare:workers");
+
+  // The Cloudflare env type only declares the KV and coordinator bindings;
+  // the cursor secret is read defensively so an undeclared secret fails the
+  // validation gate rather than a type error.
+  const cursorSecret = (env as Record<string, string | undefined>).STEALTH_CURSOR_SECRET;
+
   validateApiConfig({
     isProd: true,
     kvBinding: env.STEALTH_KV,
     coordinatorBinding: env.STEALTH_COORDINATOR,
-    cursorSecret: env.STEALTH_CURSOR_SECRET,
+    cursorSecret,
     supportedVersions: ["v1"],
   });
+
+  if (!env.STEALTH_KV || !env.STEALTH_COORDINATOR) {
+    throw new Error(
+      "Configuration error: STEALTH_KV or STEALTH_COORDINATOR binding is not declared in wrangler.jsonc.",
+    );
+  }
 
   const { HybridApiRepository } = await import("./kv-repository");
   globalApi.__stealthApiRepository = new HybridApiRepository(
