@@ -9,7 +9,8 @@ export type ApiErrorCode =
   | "not_found"
   | "unauthorized"
   | "validation_error"
-  | "too_many_requests";
+  | "too_many_requests"
+  | "dependency_unavailable";
 
 export class ApiError extends Error {
   readonly code: ApiErrorCode;

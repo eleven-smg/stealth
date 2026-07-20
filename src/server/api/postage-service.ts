@@ -1,5 +1,5 @@
 import type { Postage } from "./domain";
-import { ApiError } from "./errors";
+import { ApiError, type ApiErrorCode } from "./errors";
 import {
   checkAccountLimit,
   checkDeviceLimit,
@@ -23,7 +23,7 @@ export type SubmitPostageContext = {
 function throwAbuseLimitError(
   decision: AbuseDecision,
   status: number,
-  code: string,
+  code: ApiErrorCode,
   message: string,
 ) {
   throw new ApiError(status, code, message, {
