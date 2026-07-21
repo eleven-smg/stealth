@@ -18,12 +18,18 @@ export type RouteConfig<
   ParamsSchema extends z.ZodTypeAny,
 > = {
   /**
-   * Authentication mode for the route.
-   * - "public": No authentication performed.
-   * - "optional": Authentication attempted if credentials are present.
-   * - "required": Authentication is mandatory (default).
+   * Backwards-compat: legacy boolean flag. If set, it overrides `authMode`.
+   * Deprecated: prefer using `authMode` ("public" | "optional" | "required").
    */
-  authMode?: AuthMode; // defaults to "required"
+  requireAuth?: boolean;
+
+  /**
+   * Authentication mode for the route.
+   * - "public": No authentication performed. (default)
+   * - "optional": Authentication attempted if credentials are present.
+   * - "required": Authentication is mandatory.
+   */
+  authMode?: AuthMode; // defaults to "public"
   /** Optional authorization policy function. Return true to allow, false to reject. */
   authPolicy?: (actorId: string, request: Request) => boolean | Promise<boolean>;
   rateLimit?: RateLimitConfig;
