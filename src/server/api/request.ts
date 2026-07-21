@@ -24,6 +24,9 @@ export async function parseJsonBody<T>(
   }
 
   const body = await request.text();
+  if (!body.trim()) {
+    throw new ApiError(400, "bad_request", "Request body must not be empty");
+  }
   if (new TextEncoder().encode(body).byteLength > maxBytes) {
     throw new ApiError(413, "bad_request", `Request body exceeds ${maxBytes} bytes`);
   }
