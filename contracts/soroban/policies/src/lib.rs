@@ -522,7 +522,7 @@ mod event_schema {
                 .unwrap(),
             Error::InvalidPostage
         );
-        assert!(env.events().all().is_empty());
+        assert!(env.events().all().events().is_empty());
         assert_eq!(client.policy_version(&owner), 0);
     }
 }

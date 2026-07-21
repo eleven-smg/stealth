@@ -11,12 +11,12 @@ contract structs and enums use their normal `#[contracttype]` encoding.
 
 ## Events
 
-| Event | Topics, in order | Data | Emitted by |
-| --- | --- | --- | --- |
-| `policy` | `"policy"`, `owner` | `VersionedMailboxPolicy { policy, version }` | `set_policy`, `set_policy_as` |
-| `delegate` | `"delegate"`, `owner`, `delegate` | `DelegateScope` | `set_delegate` |
-| `sender` | `"sender"`, `owner`, `sender` | `(SenderRule, u32 version)` | `set_sender_rule`, `set_sender_rule_as` |
-| `tier` | `"tier"`, `owner`, `sender` | `(i128 minimum_postage, u32 version)` | `set_sender_tier`, `set_sender_tier_as` |
+| Event      | Topics, in order                  | Data                                         | Emitted by                              |
+| ---------- | --------------------------------- | -------------------------------------------- | --------------------------------------- |
+| `policy`   | `"policy"`, `owner`               | `VersionedMailboxPolicy { policy, version }` | `set_policy`, `set_policy_as`           |
+| `delegate` | `"delegate"`, `owner`, `delegate` | `DelegateScope`                              | `set_delegate`                          |
+| `sender`   | `"sender"`, `owner`, `sender`     | `(SenderRule, u32 version)`                  | `set_sender_rule`, `set_sender_rule_as` |
+| `tier`     | `"tier"`, `owner`, `sender`       | `(i128 minimum_postage, u32 version)`        | `set_sender_tier`, `set_sender_tier_as` |
 
 The public wrapper and its corresponding `*_as` function produce the same
 event. The authorized actor is deliberately not included in the schema; the
@@ -28,10 +28,10 @@ ledger transaction authorization tree is the source for actor attribution.
 
 `VersionedMailboxPolicy` contains:
 
-| Field | Type | Meaning |
-| --- | --- | --- |
-| `policy` | `MailboxPolicy` | The complete policy persisted by the mutation |
-| `version` | `u32` | The owner's policy version after the mutation |
+| Field     | Type            | Meaning                                       |
+| --------- | --------------- | --------------------------------------------- |
+| `policy`  | `MailboxPolicy` | The complete policy persisted by the mutation |
+| `version` | `u32`           | The owner's policy version after the mutation |
 
 `MailboxPolicy` contains `allow_unknown: bool`, `require_verified: bool`,
 `require_receipt: bool`, and `minimum_postage: i128`.
