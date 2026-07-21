@@ -16,6 +16,19 @@ export async function acquireIdempotency(
   return repository.acquireIdempotencyRecord(keyHash, leaseMs);
 }
 
+// Restored to fix CI compatibility with imports that still use checkIdempotency
+export async function checkIdempotency(
+  repository: ApiRepository,
+  actor: string,
+  rawKey: string,
+): Promise<IdempotencyRecord | null> {
+  const result = await acquireIdempotency(repository, actor, rawKey);
+  if (result.status === "completed") {
+    return result.record;
+  }
+  return null;
+}
+
 export async function recordIdempotency(
   repository: ApiRepository,
   actor: string,
