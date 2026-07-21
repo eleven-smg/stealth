@@ -209,9 +209,19 @@ export async function resolvePostage(
   messageId: string,
   status: "refunded" | "settled",
 ) {
-  const postage = await getPostage(repository, messageId);
+  // Use an atomic compare-and-swap instead of get-then-set: two concurrent
+  // settle/refund requests for the same message must not both succeed, and
+  // every loser must observe the same deterministic terminal state rather
+  // than racing to overwrite each other.
+  const result = await repository.transitionPostage(messageId, "pending", status);
 
-  if (postage.status !== "pending") {
+  if (result.outcome === "not-found") {
+    throw new ApiError(404, "not_found", "Postage was not found");
+  }
+
+  if (result.outcome === "conflict") {
+    const { postage } = result;
+
     // Provide detailed explanations for terminal states to aid debugging and retry logic
     const explanations: Record<string, string> = {
       settled:
@@ -230,5 +240,5 @@ export async function resolvePostage(
     });
   }
 
-  return repository.setPostage({ ...postage, status });
+  return result.postage;
 }
