@@ -10,7 +10,8 @@ export type ApiErrorCode =
   | "unauthorized"
   | "validation_error"
   | "too_many_requests"
-  | "dependency_unavailable";
+  | "dependency_unavailable"
+  | "data_integrity_error";
 
 export type ValidationRuleCode =
   | "invalid_type"
@@ -33,10 +34,15 @@ export interface ValidationErrorDetails {
   validationErrors: ValidationErrorItem[];
 }
 
+export type RetryClassification = "permanent" | "transient" | "rate_limit" | "conflict";
+
 export class ApiError extends Error {
   readonly code: ApiErrorCode;
   readonly details?: unknown;
   readonly status: number;
+  readonly retryable: boolean;
+  readonly retryClassification: RetryClassification;
+  readonly retryAfterSeconds?: number;
 
   constructor(status: number, code: ApiErrorCode, message: string, details?: unknown) {
     super(message);
@@ -44,6 +50,40 @@ export class ApiError extends Error {
     this.status = status;
     this.code = code;
     this.details = details;
+
+    if (code === "too_many_requests") {
+      this.retryClassification = "rate_limit";
+      this.retryable = true;
+      if (details && typeof details === "object" && "retryAfterSeconds" in details) {
+        const val = (details as any).retryAfterSeconds;
+        if (typeof val === "number") {
+          this.retryAfterSeconds = val;
+        }
+      }
+    } else if (code === "conflict") {
+      this.retryClassification = "conflict";
+      this.retryable = true;
+    } else if (code === "internal_error") {
+      this.retryClassification = "transient";
+      this.retryable = true;
+    } else {
+      this.retryClassification = "permanent";
+      this.retryable = false;
+    }
+  }
+}
+
+export class DataIntegrityError extends Error {
+  readonly recordType: string;
+  readonly correlationId: string;
+  readonly code: ApiErrorCode = "data_integrity_error";
+  readonly status = 500;
+
+  constructor(recordType: string, correlationId: string, message?: string) {
+    super(message ?? `Stored ${recordType} record failed validation`);
+    this.name = "DataIntegrityError";
+    this.recordType = recordType;
+    this.correlationId = correlationId;
   }
 }
 
