@@ -92,6 +92,30 @@ export class MemoryApiRepository implements ApiRepository {
     return structuredClone(receipt);
   }
 
+  async markReceiptRead(
+    messageId: string,
+    actor: string,
+    now = new Date(),
+  ): Promise<import("./repository").MarkReceiptReadResult> {
+    // No `await` occurs between the read and the write below, so this
+    // check-then-act sequence runs to completion within a single
+    // microtask and cannot interleave with a concurrent call for the
+    // same messageId, giving us the atomicity the interface requires.
+    const receipt = this.receipts.get(messageId);
+    if (!receipt) {
+      return { outcome: "not-found" };
+    }
+    if (actor !== receipt.sender && actor !== receipt.recipient) {
+      return { outcome: "forbidden" };
+    }
+    if (receipt.readAt !== null) {
+      return { outcome: "already-read", readAt: receipt.readAt };
+    }
+    const updated: Receipt = { ...receipt, readAt: now.toISOString() };
+    this.receipts.set(messageId, updated);
+    return { outcome: "marked", receipt: structuredClone(updated) };
+  }
+
   async getRelayQueueDepth(_relayId: string) {
     return 0;
   }
