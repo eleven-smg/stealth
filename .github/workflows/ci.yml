@@ -42,10 +42,10 @@ jobs:
       - name: Setup Node for Optic
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: OpenAPI Compatibility
-        run: npx @useoptic/optic diff openapi.json --base origin/main --check
+        run: npx @useoptic/optic@latest diff openapi.json --base origin/main --check
         env:
           OPTIC_TOKEN: ${{ secrets.OPTIC_TOKEN }}
 
