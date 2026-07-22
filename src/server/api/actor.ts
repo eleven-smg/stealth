@@ -2,6 +2,7 @@ import { stellarAddressSchema } from "./domain";
 import { ApiError } from "./errors";
 import { assertActorAuthorized, type DelegatedAuthorization } from "./auth/delegation";
 import { extractPrincipal, type ApiContext, type ApiPrincipal } from "./context";
+import { recordAuditEvent } from "./audit";
 
 export const ACTOR_HEADER = "x-stealth-address";
 export const DELEGATION_HEADER = "x-stealth-delegation";
@@ -53,5 +54,36 @@ export function requireActorMatches(
   authorization?: DelegatedAuthorization,
 ) {
   const actor = requireActor(requestOrContext);
+  const isDelegated = actor !== expectedAddress;
+  const requestId =
+    requestOrContext && typeof requestOrContext === "object" && "headers" in requestOrContext
+      ? (requestOrContext as Request).headers.get("x-request-id")?.trim() || ""
+      : (requestOrContext as ApiContext).requestId || "";
+
+  if (isDelegated) {
+    try {
+      const res = assertActorAuthorized(actor, expectedAddress, authorization);
+      recordAuditEvent({
+        actor,
+        action: "delegation.authorize",
+        targetType: "mailbox",
+        safeTargetReference: `mailbox:${expectedAddress}`,
+        result: "success",
+        requestId,
+      });
+      return res;
+    } catch (error) {
+      recordAuditEvent({
+        actor,
+        action: "delegation.authorize",
+        targetType: "mailbox",
+        safeTargetReference: `mailbox:${expectedAddress}`,
+        result: "denied",
+        requestId,
+      });
+      throw error;
+    }
+  }
+
   return assertActorAuthorized(actor, expectedAddress, authorization);
 }
