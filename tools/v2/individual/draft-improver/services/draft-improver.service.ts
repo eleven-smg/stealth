@@ -148,8 +148,22 @@ export function sanitizeDraft(
 
   const wasTruncated = subject.length < originalSubjectLength || body.length < originalBodyLength;
 
-  subject = subject.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
-  body = body.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+  function stripControlChars(s: string): string {
+    let result = "";
+    for (let i = 0; i < s.length; i++) {
+      const code = s.charCodeAt(i);
+      const isControl =
+        (code >= 0x00 && code <= 0x08) ||
+        code === 0x0b ||
+        code === 0x0c ||
+        (code >= 0x0e && code <= 0x1f);
+      if (!isControl) result += s[i];
+    }
+    return result;
+  }
+
+  subject = stripControlChars(subject);
+  body = stripControlChars(body);
 
   const wasSanitized = wasTruncated || subject.length < input.subject.length;
 
