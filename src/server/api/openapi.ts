@@ -85,7 +85,6 @@ export const openApiDocument = {
           },
         },
       },
-
       StellarAddress: {
         type: "string",
         pattern: "^G[A-Z2-7]{55}$",

@@ -50,6 +50,14 @@ export interface ApiRepository {
     expectedStatus: PostageStatus,
     nextStatus: PostageStatus,
   ): Promise<PostageTransitionResult>;
+  /**
+   * Insert a postage record, enforcing message-identifier uniqueness at the
+   * persistence layer. Unlike {@link ApiRepository.setPostage} (an upsert), a
+   * duplicate messageId must reject with a deterministic conflict
+   * (ApiError 409 "conflict") so duplicate records can never create ambiguous
+   * postage/receipt state. Concurrent inserts must yield exactly one winner.
+   */
+  insertPostage(postage: Postage): Promise<Postage>;
   getReceipt(messageId: string): Promise<Receipt | null>;
   setReceipt(receipt: Receipt): Promise<Receipt>;
   acquireIdempotencyRecord(key: string, leaseMs: number): Promise<AcquireIdempotencyResult>;
@@ -145,6 +153,11 @@ export class ValidatedApiRepository implements ApiRepository {
     nextStatus: PostageStatus,
   ): Promise<PostageTransitionResult> {
     return this.inner.transitionPostage(messageId, expectedStatus, nextStatus);
+  }
+
+  async insertPostage(postage: Postage): Promise<Postage> {
+    const result = await this.inner.insertPostage(postage);
+    return validateRecord<Postage>("postage", result);
   }
 
   async getReceipt(messageId: string): Promise<Receipt | null> {

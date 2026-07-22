@@ -7,6 +7,7 @@ import type {
   SenderRule,
 } from "./domain";
 import type { ApiRepository, PostageTransitionResult } from "./repository";
+import { ApiError } from "./errors";
 
 function key(owner: string, sender: string) {
   return `${owner}:${sender}`;
@@ -68,6 +69,18 @@ export class MemoryApiRepository implements ApiRepository {
     const updated: Postage = { ...current, status: nextStatus };
     this.postage.set(messageId, updated);
     return { outcome: "applied", postage: structuredClone(updated) };
+  }
+
+  async insertPostage(postage: Postage) {
+    if (this.postage.has(postage.messageId)) {
+      throw new ApiError(
+        409,
+        "conflict",
+        `A postage record already exists for message ${postage.messageId}`,
+      );
+    }
+    this.postage.set(postage.messageId, structuredClone(postage));
+    return structuredClone(postage);
   }
 
   async getReceipt(messageId: string) {
