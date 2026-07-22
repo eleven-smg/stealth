@@ -12,6 +12,13 @@ The TanStack Start worker exposes versioned endpoints under `/api/v1`.
 Amounts are decimal strings in stroops because Soroban uses i128 values that can exceed JavaScript's
 safe integer range. Message IDs and payment hashes are lowercase 32-byte hexadecimal strings.
 
+## Response headers
+
+All JSON API responses include `Content-Type: application/json; charset=utf-8`, `Cache-Control`,
+`X-Request-ID`, and `X-Content-Type-Options: nosniff`. The security header is applied centrally and
+cannot be overridden by individual routes. CORS headers remain independently configurable and are
+preserved when responses are created.
+
 ## Idempotency
 
 Certain endpoints support idempotency via the optional `X-Idempotency-Key` header to ensure safe
