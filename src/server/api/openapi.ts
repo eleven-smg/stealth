@@ -85,18 +85,7 @@ export const openApiDocument = {
           },
         },
       },
-      ErrorEnvelope: {
-        type: "object",
-        required: ["error", "meta"],
-        properties: {
-          error: {
-            $ref: "#/components/schemas/DomainError",
-          },
-          meta: {
-            $ref: "#/components/schemas/ApiMeta",
-          },
-        },
-      },
+
       StellarAddress: {
         type: "string",
         pattern: "^G[A-Z2-7]{55}$",
