@@ -62,6 +62,9 @@ Only one concurrent request can succeed; replay attempts are rejected, and actor
 mismatches do not consume the legitimate caller's nonce. Production storage adapters must provide
 the same atomic compare-and-consume guarantee as the in-memory development implementation.
 
+The versioned production signing contract, verification order, validity windows, replay rules, and
+executable examples are in the [signed API authentication protocol v1](../security/api-authentication-v1.md).
+
 ```bash
 curl -X PUT http://localhost:8080/api/v1/policies/GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \
   -H "content-type: application/json" \
