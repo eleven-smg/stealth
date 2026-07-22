@@ -39,11 +39,6 @@ jobs:
       - name: Generate OpenAPI
         run: bun run generate:openapi
 
-      - name: Setup Node for Optic
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: OpenAPI Compatibility
         run: |
           # Install Optic into a dedicated env with AJV overrides.
@@ -51,6 +46,9 @@ jobs:
           # nested AJV generates broken function code (SyntaxError: ':').
           # Forcing ajv>=8.17.1 via npm overrides dedups the nested copy
           # so spectral-core uses the patched version instead.
+          # Note: no setup-node step — runner's default Node 24 is used
+          # so that subsequent steps (vitest / @cloudflare/vite-plugin)
+          # still have access to node:module.registerHooks (Node >=23.5).
           mkdir -p /tmp/optic-env
           cd /tmp/optic-env
           cat > package.json << 'EOF'
