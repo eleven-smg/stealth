@@ -50,6 +50,9 @@ This header only preserves authorization boundaries during development. It is no
 Production must derive the actor from a verified wallet challenge or signed session and must ignore
 caller-supplied identity headers at the public edge.
 
+The versioned production signing contract, verification order, validity windows, replay rules, and
+executable examples are in the [signed API authentication protocol v1](../security/api-authentication-v1.md).
+
 ```bash
 curl -X PUT http://localhost:8080/api/v1/policies/GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \
   -H "content-type: application/json" \
