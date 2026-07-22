@@ -210,7 +210,7 @@ describe("RetryableApiRepository", () => {
       expect.fail("should have thrown");
     } catch (error) {
       expect(error).toBeInstanceOf(RetryExhaustedError);
-      expect(error).toBeInstanceOf(ApiError);
+      expect(error).not.toBeInstanceOf(ApiError);
       expect((error as RetryExhaustedError).originalError).toBeInstanceOf(ApiError);
       expect((error as RetryExhaustedError).code).toBe("retry_exhausted");
       expect((error as RetryExhaustedError).status).toBe(500);
