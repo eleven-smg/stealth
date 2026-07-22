@@ -32,12 +32,14 @@ export interface AnonymousApiContext {
   repository: ApiRepository;
   principal: null;
   isAuthenticated: false;
+  requestId?: string;
 }
 
 export interface AuthenticatedApiContext {
   repository: ApiRepository;
   principal: ApiPrincipal;
   isAuthenticated: true;
+  requestId?: string;
 }
 
 export type ApiContext = AnonymousApiContext | AuthenticatedApiContext;
@@ -79,18 +81,21 @@ export function extractPrincipal(request: Request): ApiPrincipal | null {
 export function createApiContext(
   repository: ApiRepository,
   principal?: ApiPrincipal | null,
+  requestId?: string,
 ): ApiContext {
   if (principal) {
     return {
       repository,
       principal,
       isAuthenticated: true,
+      requestId,
     };
   }
   return {
     repository,
     principal: null,
     isAuthenticated: false,
+    requestId,
   };
 }
 
@@ -169,5 +174,6 @@ export async function getApiContext(request?: Request): Promise<ApiContext> {
   }
 
   const principal = request ? extractPrincipal(request) : null;
-  return createApiContext(repo, principal);
+  const requestId = request ? request.headers.get("x-request-id")?.trim() || undefined : undefined;
+  return createApiContext(repo, principal, requestId);
 }
