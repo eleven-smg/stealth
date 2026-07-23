@@ -76,22 +76,14 @@ async function sha256Hex(data: Uint8Array): Promise<string> {
   return toHex(new Uint8Array(digest));
 }
 
+import { canonicalize } from "./jcs";
+
 /**
- * RFC 8785-style canonical JSON: object keys sorted, no insignificant
- * whitespace. Used so the signature in the wallet step is reproducible.
+ * RFC 8785 JSON Canonicalization Scheme (JCS).
+ * Used so the signature in the wallet step is reproducible and strictly compliant.
  */
 export function canonicalizePayload(value: unknown): string {
-  if (value === null || typeof value !== "object") {
-    return JSON.stringify(value);
-  }
-  if (Array.isArray(value)) {
-    return "[" + value.map((item) => canonicalizePayload(item)).join(",") + "]";
-  }
-  const record = value as Record<string, unknown>;
-  const entries = Object.keys(record)
-    .sort()
-    .map((key) => JSON.stringify(key) + ":" + canonicalizePayload(record[key]));
-  return "{" + entries.join(",") + "}";
+  return canonicalize(value);
 }
 
 /**
