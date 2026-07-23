@@ -15,6 +15,7 @@ import { clearSecret, digestHex, sharedPool, toBase64, toHex } from "./memory";
 import { getCryptoTestVectors } from "./testing";
 import { createCommitment } from "./commitment";
 import { recordCryptoTelemetry, type CryptoResultCode } from "./telemetry";
+import { canonicalizeAttachmentDescriptors } from "./attachment-metadata";
 
 export interface EnvelopeAttachment {
   filename: string;
@@ -30,6 +31,8 @@ export interface EncryptionMetadata {
   nonce: string;
   mac: string;
   ephemeral_public_key?: string;
+  recipient_key_id?: string;
+  sender_key_id?: string;
 }
 
 export interface EnvelopePayload {
@@ -60,6 +63,8 @@ export interface SealEnvelopeInput {
   }>;
   /** When aborted, all internal references are released and the promise rejects. */
   signal?: AbortSignal;
+  recipientKeyId?: string;
+  senderKeyId?: string;
 }
 
 const GCM_TAG_BYTES = 16;
@@ -126,6 +131,57 @@ export async function sealEnvelope(input: SealEnvelopeInput): Promise<SealedEnve
           "decrypt",
         ]);
 
+    // --- Pre-process attachments to get descriptors for AAD ---
+    const attachmentsToProcess = input.attachments ?? [];
+    const descriptors: Array<{
+      filename: string;
+      content_type: string;
+      size_bytes: number;
+      content_hash: string;
+    }> = [];
+    const preparedAttachments: Array<{
+      filename: string;
+      content_type: string;
+      size_bytes: number;
+      data?: ArrayBuffer;
+      content_hash: string;
+    }> = [];
+
+    for (const attachment of attachmentsToProcess) {
+      let hash: string;
+      if (attachment.data) {
+        // View into caller's ArrayBuffer — no copy for hashing.
+        const dataBytes = new Uint8Array(attachment.data);
+        hash = await digestHex(dataBytes);
+        if (attachment.content_hash && hash !== attachment.content_hash) {
+          throw new Error(
+            `Mismatch between supplied bytes and content_hash for attachment ${attachment.filename}`,
+          );
+        }
+      } else if (attachment.content_hash) {
+        hash = attachment.content_hash;
+      } else {
+        throw new Error(
+          `Attachment ${attachment.filename} must include either data bytes or a validated content_hash`,
+        );
+      }
+      descriptors.push({
+        filename: attachment.filename,
+        content_type: attachment.content_type,
+        size_bytes: attachment.size_bytes,
+        content_hash: hash,
+      });
+      preparedAttachments.push({
+        filename: attachment.filename,
+        content_type: attachment.content_type,
+        size_bytes: attachment.size_bytes,
+        data: attachment.data,
+        content_hash: hash,
+      });
+    }
+
+    const aad = canonicalizeAttachmentDescriptors(descriptors);
+
     // --- Body encryption ---
     throwIfAborted();
     const ivBuf = sharedPool.acquire(12);
@@ -142,7 +198,7 @@ export async function sealEnvelope(input: SealEnvelopeInput): Promise<SealedEnve
     // a pool buffer, but we manage the result lifecycle explicitly below.
     const ciphertext = new Uint8Array(
       await crypto.subtle.encrypt(
-        { name: "AES-GCM", iv: iv as BufferSource },
+        { name: "AES-GCM", iv: iv as BufferSource, additionalData: aad as BufferSource },
         key,
         plaintext as BufferSource,
       ),
@@ -157,22 +213,13 @@ export async function sealEnvelope(input: SealEnvelopeInput): Promise<SealedEnve
     // --- Attachments (sequential, buffers freed per iteration) ---
     throwIfAborted();
     const attachments: EnvelopeAttachment[] = [];
-    for (const attachment of input.attachments ?? []) {
+    for (const attachment of preparedAttachments) {
       throwIfAborted();
-      let hash: string;
       let encMetadata: EncryptionMetadata | undefined;
       let ciphertextStr: string | undefined;
 
       if (attachment.data) {
-        // View into caller's ArrayBuffer — no copy for hashing.
         const dataBytes = new Uint8Array(attachment.data);
-        hash = await digestHex(dataBytes);
-        if (attachment.content_hash && hash !== attachment.content_hash) {
-          throw new Error(
-            `Mismatch between supplied bytes and content_hash for attachment ${attachment.filename}`,
-          );
-        }
-
         const attIv = sharedPool.acquire(12);
         const attIvView = new Uint8Array(attIv, 0, 12);
         crypto.getRandomValues(attIvView);
@@ -196,18 +243,12 @@ export async function sealEnvelope(input: SealEnvelopeInput): Promise<SealedEnve
         // Release attachment crypto buffers.
         clearSecret(attCiphertext);
         sharedPool.release(attIv);
-      } else if (attachment.content_hash) {
-        hash = attachment.content_hash;
-      } else {
-        throw new Error(
-          `Attachment ${attachment.filename} must include either data bytes or a validated content_hash`,
-        );
       }
       attachments.push({
         filename: attachment.filename,
         content_type: attachment.content_type,
         size_bytes: attachment.size_bytes,
-        content_hash: hash,
+        content_hash: attachment.content_hash,
         ...(encMetadata ? { encryption_metadata: encMetadata } : {}),
         ...(ciphertextStr ? { ciphertext: ciphertextStr } : {}),
       });
@@ -218,10 +259,13 @@ export async function sealEnvelope(input: SealEnvelopeInput): Promise<SealedEnve
 
     // Compute the content commitment BEFORE base64-encoding so the binary
     // ciphertext can be released immediately after.
-    const contentCommitment = await digestHex(ciphertext);
+    const contentCommitment = await createCommitment(ciphertext);
 
     // Encode the ciphertext — the binary buffer is no longer needed afterwards.
     const ciphertextBase64 = toBase64(ciphertext);
+
+    const nonceHex = toHex(iv);
+    const macHex = toHex(tag);
 
     // Release body ciphertext buffer now that both commitment and base64 are done.
     clearSecret(ciphertext);
@@ -234,8 +278,10 @@ export async function sealEnvelope(input: SealEnvelopeInput): Promise<SealedEnve
       timestamp: now ? now().toISOString() : new Date().toISOString(),
       encryption_metadata: {
         algorithm: "AES-256-GCM",
-        nonce: toHex(iv),
-        mac: toHex(tag),
+        nonce: nonceHex,
+        mac: macHex,
+        ...(input.recipientKeyId ? { recipient_key_id: input.recipientKeyId } : {}),
+        ...(input.senderKeyId ? { sender_key_id: input.senderKeyId } : {}),
       },
       content_commitment: contentCommitment,
       attachments,

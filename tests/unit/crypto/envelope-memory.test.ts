@@ -56,9 +56,9 @@ describe("crypto/envelope — sealing", () => {
     expect(result.payload.encryption_metadata.mac).toMatch(/^[0-9a-f]{32}$/);
   });
 
-  it("content_commitment is lowercase hex of 32 bytes (64 chars)", async () => {
+  it("content_commitment is versioned lowercase hex of 32 bytes (64 chars)", async () => {
     const result = await sealEnvelope(defaultInput);
-    expect(result.payload.content_commitment).toMatch(/^[0-9a-f]{64}$/);
+    expect(result.payload.content_commitment).toMatch(/^v1:sha256:hex:[0-9a-f]{64}$/);
   });
 
   it("produces valid encryption structure for repeated calls", async () => {
@@ -70,7 +70,7 @@ describe("crypto/envelope — sealing", () => {
     expect(a.payload.encryption_metadata.nonce).toMatch(/^[0-9a-f]{24}$/);
     expect(b.payload.encryption_metadata.nonce).toMatch(/^[0-9a-f]{24}$/);
     expect(a.payload.encryption_metadata.mac).toMatch(/^[0-9a-f]{32}$/);
-    expect(a.payload.content_commitment).toMatch(/^[0-9a-f]{64}$/);
+    expect(a.payload.content_commitment).toMatch(/^v1:sha256:hex:[0-9a-f]{64}$/);
   });
 });
 

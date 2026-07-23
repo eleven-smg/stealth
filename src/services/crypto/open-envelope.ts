@@ -15,6 +15,7 @@
 
 import { verifyCommitment } from "./commitment";
 import { recordCryptoTelemetry, type CryptoResultCode } from "./telemetry";
+import { canonicalizeAttachmentDescriptors } from "./attachment-metadata";
 
 /** Minimal non-secret error carrying a stable code (no key/plaintext leakage). */
 export class OpenEnvelopeError extends Error {
@@ -39,7 +40,7 @@ export class OpenEnvelopeError extends Error {
 
 /** Supplies the recipient's AES-GCM key for decryption (integration-owned). */
 export interface KeyProvider {
-  resolveKey(recipient: string): Promise<CryptoKey>;
+  resolveKey(recipient: string, recipientKeyId?: string): Promise<CryptoKey>;
 }
 
 const GCM_TAG_BYTES = 16;
@@ -56,6 +57,8 @@ export interface OpenedEnvelope {
     size_bytes: number;
     content_hash: string;
   }>;
+  recipientKeyId?: string;
+  senderKeyId?: string;
 }
 
 /** Shape we accept (structural — we validate fields individually). */
@@ -69,6 +72,8 @@ interface RawPayload {
     nonce?: unknown;
     mac?: unknown;
     ephemeral_public_key?: unknown;
+    recipient_key_id?: unknown;
+    sender_key_id?: unknown;
   };
   content_commitment?: unknown;
   attachments?: unknown;
@@ -113,6 +118,19 @@ function str(value: unknown, field: string): string {
     throw new OpenEnvelopeError(`missing or invalid ${field}`, "crypto_validation_error");
   }
   return value;
+}
+
+function num(value: unknown, field: string): number {
+  if (typeof value === "number" && !Number.isNaN(value) && value >= 0) {
+    return value;
+  }
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    if (!Number.isNaN(parsed) && parsed >= 0) {
+      return parsed;
+    }
+  }
+  throw new OpenEnvelopeError(`missing or invalid ${field}`, "crypto_validation_error");
 }
 
 /**
@@ -198,12 +216,33 @@ export async function openEnvelope(
     }
 
     // 4) Resolve recipient key and decrypt (fail closed on any mismatch).
+    const recipientKeyId =
+      typeof meta.recipient_key_id === "string" ? meta.recipient_key_id : undefined;
+    const senderKeyId = typeof meta.sender_key_id === "string" ? meta.sender_key_id : undefined;
+
     let key: CryptoKey;
     try {
-      key = await keys.resolveKey(recipient);
+      key = await keys.resolveKey(recipient, recipientKeyId);
     } catch {
       throw new OpenEnvelopeError("recipient key unavailable", "crypto_decryption_error");
     }
+
+    const parsedAttachments = Array.isArray(payload.attachments)
+      ? payload.attachments.map((a) => ({
+          filename: str((a as { filename?: unknown }).filename, "attachment.filename"),
+          content_type: str(
+            (a as { content_type?: unknown }).content_type,
+            "attachment.content_type",
+          ),
+          size_bytes: num((a as { size_bytes?: unknown }).size_bytes, "attachment.size_bytes"),
+          content_hash: str(
+            (a as { content_hash?: unknown }).content_hash,
+            "attachment.content_hash",
+          ),
+        }))
+      : [];
+
+    const aad = canonicalizeAttachmentDescriptors(parsedAttachments);
 
     const iv = fromHex(nonceHex);
     const ivCopy = new Uint8Array(new ArrayBuffer(iv.length));
@@ -215,7 +254,11 @@ export async function openEnvelope(
     // fails closed on tamper or wrong key).
     let decrypted: ArrayBuffer;
     try {
-      decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: ivCopy }, key, ctCopy);
+      decrypted = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: ivCopy, additionalData: aad as BufferSource },
+        key,
+        ctCopy,
+      );
     } catch {
       throw new OpenEnvelopeError(
         "decryption failed (wrong key or tampered)",
@@ -225,24 +268,15 @@ export async function openEnvelope(
 
     const body = new TextDecoder().decode(new Uint8Array(decrypted));
 
-    const attachments = Array.isArray(payload.attachments)
-      ? payload.attachments.map((a) => ({
-          filename: str((a as { filename?: unknown }).filename, "attachment.filename"),
-          content_type: str(
-            (a as { content_type?: unknown }).content_type,
-            "attachment.content_type",
-          ),
-          size_bytes: Number(
-            str((a as { size_bytes?: unknown }).size_bytes, "attachment.size_bytes"),
-          ),
-          content_hash: str(
-            (a as { content_hash?: unknown }).content_hash,
-            "attachment.content_hash",
-          ),
-        }))
-      : [];
-
-    return { sender, recipient, timestamp, body, attachments };
+    return {
+      sender,
+      recipient,
+      timestamp,
+      body,
+      attachments: parsedAttachments,
+      recipientKeyId,
+      senderKeyId,
+    };
   } catch (error: unknown) {
     result = mapOpenEnvelopeError(error);
     throw error;
