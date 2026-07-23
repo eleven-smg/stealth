@@ -70,7 +70,7 @@ export async function deriveKeyId(publicKey: Uint8Array): Promise<string> {
 export function isKeyDecryptable(
   key: KeyMetadata,
   policy: KeyRotationPolicy,
-  referenceTime: Date = new Date()
+  referenceTime: Date = new Date(),
 ): boolean {
   if (key.rotationState === "revoked") {
     return false;
@@ -115,11 +115,9 @@ export function resolveKeysFromSet(
   keyId: string,
   keys: KeyMetadata[],
   policy: KeyRotationPolicy,
-  referenceTime: Date = new Date()
+  referenceTime: Date = new Date(),
 ): KeyMetadata[] {
-  return keys.filter(
-    (k) => k.keyId === keyId && isKeyDecryptable(k, policy, referenceTime)
-  );
+  return keys.filter((k) => k.keyId === keyId && isKeyDecryptable(k, policy, referenceTime));
 }
 
 /**

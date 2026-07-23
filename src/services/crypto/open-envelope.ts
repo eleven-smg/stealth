@@ -184,8 +184,12 @@ export async function openEnvelope(
     throw new OpenEnvelopeError("auth tag mismatch", "crypto_integrity_error");
   }
 
-  const recipientKeyId = meta.recipient_key_id !== undefined ? str(meta.recipient_key_id, "recipient_key_id") : undefined;
-  const senderKeyId = meta.sender_key_id !== undefined ? str(meta.sender_key_id, "sender_key_id") : undefined;
+  const recipientKeyId =
+    meta.recipient_key_id !== undefined
+      ? str(meta.recipient_key_id, "recipient_key_id")
+      : undefined;
+  const senderKeyId =
+    meta.sender_key_id !== undefined ? str(meta.sender_key_id, "sender_key_id") : undefined;
 
   // 4) Resolve recipient key and decrypt (fail closed on any mismatch).
   let key: CryptoKey;

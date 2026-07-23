@@ -207,11 +207,10 @@ describe("Cryptographic Key Identifiers and Rotation Metadata", () => {
 
       // Use test vectors for deterministic key generation
       const vectors = getCryptoTestVectors();
-      const mockKey = await crypto.subtle.generateKey(
-        { name: "AES-GCM", length: 256 },
-        true,
-        ["encrypt", "decrypt"]
-      );
+      const mockKey = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
+        "encrypt",
+        "decrypt",
+      ]);
       vectors.generateKey = async () => mockKey;
 
       const sealed = await sealEnvelope({
@@ -243,7 +242,7 @@ describe("Cryptographic Key Identifiers and Rotation Metadata", () => {
       expect(opened.recipientKeyId).toBe(recipientKeyId);
       expect(opened.senderKeyId).toBe(senderKeyId);
       expect(resolvedKeyIdPassed).toBe(recipientKeyId);
-      
+
       // Clean up test vectors
       vectors.generateKey = undefined;
     });
