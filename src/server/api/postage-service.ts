@@ -105,7 +105,7 @@ export async function quotePostage(
         expiresAt,
         digest: signQuote(input.recipient, input.sender, amount, issuedAt, expiresAt),
       };
-      
+
       recordAuditEvent({
         actor: input.sender,
         action: "postage.quote",

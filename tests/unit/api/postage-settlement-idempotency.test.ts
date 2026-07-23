@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { MemoryApiRepository } from "../../../src/server/api/memory-repository";
 import { resolvePostage, getPostage } from "../../../src/server/api/postage-service";
-import { createApiContext } from '../../../src/server/api/context';
+import { createApiContext } from "../../../src/server/api/context";
 import { checkIdempotency, recordIdempotency } from "../../../src/server/api/idempotency-service";
 
 const recipient = `G${"A".repeat(55)}`;
@@ -29,7 +29,9 @@ describe("Postage Settlement Idempotency", () => {
       expect(firstResult.status).toBe("settled");
 
       // Second settlement attempt returns deterministic error
-      await expect(resolvePostage(createApiContext(repository), messageId, "settled")).rejects.toMatchObject({
+      await expect(
+        resolvePostage(createApiContext(repository), messageId, "settled"),
+      ).rejects.toMatchObject({
         status: 409,
         code: "conflict",
         message: expect.stringContaining("already been settled"),
@@ -41,7 +43,9 @@ describe("Postage Settlement Idempotency", () => {
       });
 
       // Third attempt also returns the same error (determinism)
-      await expect(resolvePostage(createApiContext(repository), messageId, "settled")).rejects.toMatchObject({
+      await expect(
+        resolvePostage(createApiContext(repository), messageId, "settled"),
+      ).rejects.toMatchObject({
         status: 409,
         code: "conflict",
         message: expect.stringContaining("already been settled"),
@@ -66,7 +70,9 @@ describe("Postage Settlement Idempotency", () => {
       await resolvePostage(createApiContext(repository), messageId, "refunded");
 
       // Attempt to settle already-refunded postage
-      await expect(resolvePostage(createApiContext(repository), messageId, "settled")).rejects.toMatchObject({
+      await expect(
+        resolvePostage(createApiContext(repository), messageId, "settled"),
+      ).rejects.toMatchObject({
         status: 409,
         code: "conflict",
         message: expect.stringContaining("already been refunded"),
@@ -129,7 +135,9 @@ describe("Postage Settlement Idempotency", () => {
       });
 
       const outcomes = await Promise.allSettled(
-        Array.from({ length: 10 }, () => resolvePostage(createApiContext(repository), messageId, "settled")),
+        Array.from({ length: 10 }, () =>
+          resolvePostage(createApiContext(repository), messageId, "settled"),
+        ),
       );
 
       const fulfilled = outcomes.filter((outcome) => outcome.status === "fulfilled");
@@ -204,7 +212,11 @@ describe("Postage Settlement Idempotency", () => {
       expect(firstCheck).toBeNull();
 
       // Perform settlement
-      const settledPostage = await resolvePostage(createApiContext(repository), messageId, "settled");
+      const settledPostage = await resolvePostage(
+        createApiContext(repository),
+        messageId,
+        "settled",
+      );
       expect(settledPostage.status).toBe("settled");
 
       // Record the success for replay

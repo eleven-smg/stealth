@@ -9,7 +9,7 @@ import {
   resolvePostage,
   submitPostage,
 } from "../../../src/server/api/postage-service";
-import { createApiContext } from '../../../src/server/api/context';
+import { createApiContext } from "../../../src/server/api/context";
 
 const recipient = `G${"A".repeat(55)}`;
 const sender = `G${"B".repeat(55)}`;
@@ -24,7 +24,9 @@ describe("postage service", () => {
     });
     await repository.setSenderRule(recipient, sender, "allow");
 
-    await expect(quotePostage(createApiContext(repository), { recipient, sender })).resolves.toMatchObject({
+    await expect(
+      quotePostage(createApiContext(repository), { recipient, sender }),
+    ).resolves.toMatchObject({
       amount: "0",
       eligible: true,
       trusted: true,
@@ -35,7 +37,9 @@ describe("postage service", () => {
     const repository = new MemoryApiRepository();
     await repository.setSenderRule(recipient, sender, "block");
 
-    await expect(quotePostage(createApiContext(repository), { recipient, sender })).resolves.toMatchObject({
+    await expect(
+      quotePostage(createApiContext(repository), { recipient, sender }),
+    ).resolves.toMatchObject({
       eligible: false,
       reason: "sender_blocked",
     });
@@ -62,7 +66,9 @@ describe("postage service", () => {
       createdAt: "2026-06-14T12:00:00.000Z",
       status: "pending",
     });
-    await expect(submitPostage(createApiContext(repository), input)).rejects.toMatchObject({ status: 409 });
+    await expect(submitPostage(createApiContext(repository), input)).rejects.toMatchObject({
+      status: 409,
+    });
   });
 
   it("rejects postage below the mailbox minimum", async () => {
@@ -208,10 +214,14 @@ describe("postage service", () => {
       status: "pending",
     });
 
-    await expect(resolvePostage(createApiContext(repository), "a".repeat(64), "settled")).resolves.toMatchObject({
+    await expect(
+      resolvePostage(createApiContext(repository), "a".repeat(64), "settled"),
+    ).resolves.toMatchObject({
       status: "settled",
     });
-    await expect(resolvePostage(createApiContext(repository), "a".repeat(64), "settled")).rejects.toMatchObject({
+    await expect(
+      resolvePostage(createApiContext(repository), "a".repeat(64), "settled"),
+    ).rejects.toMatchObject({
       status: 409,
     });
   });
@@ -228,7 +238,9 @@ describe("postage service", () => {
       status: "pending",
     });
 
-    await expect(resolvePostage(createApiContext(repository), "c".repeat(64), "refunded")).resolves.toMatchObject({
+    await expect(
+      resolvePostage(createApiContext(repository), "c".repeat(64), "refunded"),
+    ).resolves.toMatchObject({
       status: "refunded",
     });
   });
