@@ -17,9 +17,9 @@ The system ensures that any unversioned records from legacy memory storage are i
 
 ## Forward Migrations
 
-Migrations are deterministic and handled "on-read" (lazy migration). When a record is fetched from the durable storage, the repository layer checks its `$v` attribute against the current version defined in code. 
+Migrations are deterministic and handled "on-read" (lazy migration). When a record is fetched from the durable storage, the repository layer checks its `$v` attribute against the current version defined in code.
 
-If the stored version is older than the current version, the system sequentially applies the necessary migrations from the record's version up to the current version. The migrated record is then validated against the current Zod schema. 
+If the stored version is older than the current version, the system sequentially applies the necessary migrations from the record's version up to the current version. The migrated record is then validated against the current Zod schema.
 
 When the record is subsequently written back to storage, it is written with the current schema version.
 
