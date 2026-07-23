@@ -88,8 +88,8 @@ export function assertKeyUsages(key: CryptoKey, expected: KeyUsage[]): void {
 /**
  * Fresh AES-256-GCM content key for the SEAL path.
  *
- * - Usages: `["encrypt"]` — the seal path never decrypts.
- * - Extractable: `true` — the content key must be exportable so it can later be
+ * - Usages: `["encrypt"]` - the seal path never decrypts.
+ * - Extractable: `true` - the content key must be exportable so it can later be
  *   wrapped to each recipient. Callers must wrap then discard it; never persist
  *   it in the clear.
  * - Lifetime: one message; discard after sealing (and wrapping).
@@ -105,8 +105,8 @@ export function generateSealContentKey(): Promise<CryptoKey> {
 /**
  * Import a raw 32-byte AES-256-GCM content key for the OPEN path.
  *
- * - Usages: `["decrypt"]` — the open path never encrypts.
- * - Extractable: `false` — an imported decryption key never needs re-export.
+ * - Usages: `["decrypt"]` - the open path never encrypts.
+ * - Extractable: `false` - an imported decryption key never needs re-export.
  * - Lifetime: one message; let it go out of scope after opening.
  */
 export function importOpenContentKey(raw: Uint8Array): Promise<CryptoKey> {
