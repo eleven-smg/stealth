@@ -18,9 +18,9 @@ teams**.
 
 These teams coordinate money movements, contract addresses, signer approvals,
 and partner deals over channels where impersonation is trivial and expensive.
-Stealth's core promise — *access is earned, not assumed*, backed by verifiable
+Stealth's core promise - access is earned, not assumed, backed by verifiable
 Stellar identity, priced access for unknown senders, and tamper-evident
-delivery proof — maps directly onto their most feared failure mode: a single
+delivery proof - maps directly onto their most feared failure mode: a single
 convincing spoof that drains a treasury or misleads the community.
 
 We start here because this segment already holds wallets and understands
@@ -32,32 +32,39 @@ cryptographic identity, so the biggest adoption cost (key management) is low.
 
 ### Firmographic qualifiers
 
-| Attribute        | Qualifier                                                                             |
-| :--------------- | :------------------------------------------------------------------------------------ |
-| Organization type | Crypto-native: protocol teams, DAOs, funds, exchanges, wallet and infrastructure companies |
-| Team size        | 5–150 people                                                                          |
-| Geography        | Global, remote-first                                                                  |
-| Identity posture | Members already custody wallets; Stellar or multi-chain presence is a plus            |
-| Economic exposure | Messages routinely carry payment instructions, addresses, or signer coordination      |
-| Budget owner     | Founder, head of security, operations lead, or chief of staff                         |
-| Trigger context  | Recent phishing incident, treasury scare, or high-profile impersonation of the brand  |
+- **Organization type:** crypto-native protocol teams, DAOs, funds, exchanges,
+  and wallet or infrastructure companies.
+- **Team size:** 5 to 150 people.
+- **Geography:** global, remote-first.
+- **Identity posture:** members already custody wallets; Stellar or multi-chain
+  presence is a plus.
+- **Economic exposure:** messages routinely carry payment instructions,
+  addresses, or signer coordination.
+- **Budget owner:** founder, head of security, operations lead, or chief of
+  staff.
+- **Trigger context:** recent phishing incident, treasury scare, or
+  high-profile impersonation of the brand.
 
 ### Behavioral qualifiers
 
-| Signal            | What we look for                                                                       |
-| :---------------- | :------------------------------------------------------------------------------------- |
-| High-stakes messaging | A single spoofed message can move funds or damage reputation                        |
-| Fragmented channels | Coordinates over email plus Telegram/Discord, where impersonation is rife            |
-| Security-conscious | Uses hardware wallets, multisig, and 2FA as a matter of habit                         |
-| Tool-adoptive     | Comfortable installing new tools, holding keys, and paying in crypto                   |
-| Gatekeeping pain  | Leaders and treasuries receive heavy, risky, unsolicited inbound                       |
+- **High-stakes messaging:** a single spoofed message can move funds or damage
+  reputation.
+- **Fragmented channels:** coordinates over email plus Telegram or Discord,
+  where impersonation is rife.
+- **Security-conscious:** uses hardware wallets, multisig, and 2FA as a matter
+  of habit.
+- **Tool-adoptive:** comfortable installing new tools, holding keys, and paying
+  in crypto.
+- **Gatekeeping pain:** leaders and treasuries receive heavy, risky,
+  unsolicited inbound.
 
 ---
 
 ## 3. Buyer vs. user distinction
 
-- **Buyer / champion:** founder, head of security/operations, or chief of staff.
-  Owns the "never again" mandate after an incident and controls tooling budget.
+- **Buyer / champion:** founder, head of security or operations, or chief of
+  staff. Owns the "never again" mandate after an incident and controls tooling
+  budget.
 - **Primary users:** internal team members who send and receive high-stakes
   messages, plus the external counterparties (investors, auditors, partners)
   they invite to verify identity.
@@ -71,18 +78,22 @@ cryptographic identity, so the biggest adoption cost (key management) is low.
 
 Ranked by combined urgency and frequency.
 
-| Rank | Job (as the customer frames it)                                                                 | Urgency | Frequency |
-| :--- | :---------------------------------------------------------------------------------------------- | :------ | :-------- |
-| 1    | "When an unknown sender contacts us, prove who they really are before I trust a payment instruction or a link." | High    | High (daily inbound) |
-| 2    | "When we publish a handle or address, stop attackers from impersonating us to our community."   | High    | Medium (ongoing) |
-| 3    | "When money or sensitive files move over a message, give me tamper-evident proof of delivery."  | Medium  | Medium |
+1. **Verify unknown senders (urgency: high, frequency: high / daily inbound).**
+   "When an unknown sender contacts us, prove who they really are before I trust
+   a payment instruction or a link."
+2. **Stop brand impersonation (urgency: high, frequency: medium / ongoing).**
+   "When we publish a handle or address, stop attackers from impersonating us to
+   our community."
+3. **Prove delivery (urgency: medium, frequency: medium).** "When money or
+   sensitive files move over a message, give me tamper-evident proof of
+   delivery."
 
 ---
 
 ## 5. Adoption trigger
 
 The dominant trigger is a **phishing or impersonation incident, or a near
-miss**, that touches the treasury or leadership — the "never again" moment.
+miss**, that touches the treasury or leadership - the "never again" moment.
 
 A secondary trigger is **onboarding a new high-value counterparty** (an
 investor, auditor, or partner) who must be verified before sensitive
@@ -92,13 +103,25 @@ coordination begins.
 
 ## 6. Five falsifiable assumptions with tests
 
-| #   | Assumption                                                                            | Test                                                                 | Keep signal (else kill/revise)                          |
-| :-- | :------------------------------------------------------------------------------------ | :------------------------------------------------------------------- | :------------------------------------------------------ |
-| A1  | Crypto-native teams rank impersonation/phishing as a top-three operational risk.      | Structured interviews with 10 qualified teams.                       | At least 7 of 10 place it in their top three.           |
-| A2  | Members will manage encryption keys without dropping off.                             | Guided onboarding with 5 teams; observe unaided key setup.           | At least 60% complete key setup without live support.   |
-| A3  | Teams will pay to gate unknown senders (subscription or postage).                     | Pricing interviews and letters of intent for a paid pilot.           | At least 3 teams verbally commit to a paid pilot.       |
-| A4  | Verifiable Stellar identity is trusted more than email/domain for high-value asks.    | Blind message-ranking test comparing identity badge vs. domain-only. | Identity badge measurably raises the trust rating.      |
-| A5  | External counterparties will accept an invite to receive/verify a Stealth message.    | Outbound invite test to real counterparties.                         | At least 40% of invited counterparties complete verification. |
+- **A1 - Risk ranking.** Assumption: crypto-native teams rank
+  impersonation/phishing as a top-three operational risk. Test: structured
+  interviews with 10 qualified teams. Keep signal: at least 7 of 10 place it in
+  their top three.
+- **A2 - Key management.** Assumption: members will manage encryption keys
+  without dropping off. Test: guided onboarding with 5 teams, observing unaided
+  key setup. Keep signal: at least 60% complete key setup without live support.
+- **A3 - Willingness to pay.** Assumption: teams will pay to gate unknown
+  senders (subscription or postage). Test: pricing interviews and letters of
+  intent for a paid pilot. Keep signal: at least 3 teams verbally commit to a
+  paid pilot.
+- **A4 - Identity trust.** Assumption: verifiable Stellar identity is trusted
+  more than email or domain for high-value asks. Test: blind message-ranking
+  test comparing an identity badge against domain-only. Keep signal: the
+  identity badge measurably raises the trust rating.
+- **A5 - Counterparty acceptance.** Assumption: external counterparties will
+  accept an invite to receive or verify a Stealth message. Test: outbound invite
+  test to real counterparties. Keep signal: at least 40% of invited
+  counterparties complete verification.
 
 ---
 
@@ -114,12 +137,18 @@ coordination begins.
 
 ## 8. Deferred segments
 
-| Segment                                   | Why deferred                                              | Revisit when                                        |
-| :---------------------------------------- | :-------------------------------------------------------- | :-------------------------------------------------- |
-| Executive inboxes / assistant gatekeeping | Broad, less crypto-native; slower identity adoption       | Identity + postage flows are proven with the wedge  |
-| Security-sensitive orgs (legal, press, health) | Compliance and retention requirements add scope           | We can meet baseline compliance needs               |
-| Paid expert / creator inbox monetization  | Depends on mature postage and settlement rails            | Postage economics are validated in production       |
-| Mainstream privacy-conscious consumers    | Needs legacy interoperability and mobile-first experience | Legacy bridge and mobile client exist               |
+- **Executive inboxes / assistant gatekeeping.** Why deferred: broad, less
+  crypto-native, with slower identity adoption. Revisit when: identity and
+  postage flows are proven with the wedge.
+- **Security-sensitive orgs (legal, press, health).** Why deferred: compliance
+  and retention requirements add scope. Revisit when: we can meet baseline
+  compliance needs.
+- **Paid expert / creator inbox monetization.** Why deferred: depends on mature
+  postage and settlement rails. Revisit when: postage economics are validated in
+  production.
+- **Mainstream privacy-conscious consumers.** Why deferred: needs legacy
+  interoperability and a mobile-first experience. Revisit when: the legacy bridge
+  and mobile client exist.
 
 ---
 
