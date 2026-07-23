@@ -45,6 +45,7 @@ export interface SealEnvelopeInput {
     content_type: string;
     size_bytes: number;
     data?: ArrayBuffer;
+    content_hash?: string;
   }>;
 }
 
@@ -114,11 +115,21 @@ export async function sealEnvelope(input: SealEnvelopeInput): Promise<SealedEnve
 
   const attachments: EnvelopeAttachment[] = [];
   for (const attachment of input.attachments ?? []) {
-    const hash = attachment.data
-      ? await sha256Hex(new Uint8Array(attachment.data))
-      : await sha256Hex(
-          new TextEncoder().encode(attachment.filename + ":" + attachment.size_bytes),
+    let hash: string;
+    if (attachment.data) {
+      hash = await sha256Hex(new Uint8Array(attachment.data));
+      if (attachment.content_hash && hash !== attachment.content_hash) {
+        throw new Error(
+          `Mismatch between supplied bytes and content_hash for attachment ${attachment.filename}`,
         );
+      }
+    } else if (attachment.content_hash) {
+      hash = attachment.content_hash;
+    } else {
+      throw new Error(
+        `Attachment ${attachment.filename} must include either data bytes or a validated content_hash`,
+      );
+    }
     attachments.push({
       filename: attachment.filename,
       content_type: attachment.content_type,
