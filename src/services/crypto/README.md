@@ -8,15 +8,15 @@ The `sealEnvelope` path is the primary allocation-sensitive crypto operation.
 The table below documents the worst-case live bytes at each phase for a body
 of **N** bytes and **A** attachments each ≤ **M** bytes.
 
-| Phase | Peak live bytes | Notes |
-|-------|----------------|-------|
-| Key generation | ~0 (opaque CryptoKey) | |
-| Body encrypt | N + (N+16) + 12 | plaintext + ciphertext + IV (pool) |
-| After body encrypt | N+16 | plaintext zeroed via `clearSecret` |
-| Content commitment | N+16 + 32 | ciphertext + SHA-256 digest |
-| Per-attachment encrypt | M + (M+16) | sequential, freed per iteration |
-| Base64 body ciphertext | N+16 + ⌈(N+16)/3⌉×~4 | ciphertext zeroed after encoding |
-| **Worst-case peak** | **≈ 2N + 28** | body only, no attachments |
+| Phase                  | Peak live bytes       | Notes                              |
+| ---------------------- | --------------------- | ---------------------------------- |
+| Key generation         | ~0 (opaque CryptoKey) |                                    |
+| Body encrypt           | N + (N+16) + 12       | plaintext + ciphertext + IV (pool) |
+| After body encrypt     | N+16                  | plaintext zeroed via `clearSecret` |
+| Content commitment     | N+16 + 32             | ciphertext + SHA-256 digest        |
+| Per-attachment encrypt | M + (M+16)            | sequential, freed per iteration    |
+| Base64 body ciphertext | N+16 + ⌈(N+16)/3⌉×~4  | ciphertext zeroed after encoding   |
+| **Worst-case peak**    | **≈ 2N + 28**         | body only, no attachments          |
 
 Previous peak was ≈ 3N + 48 (plaintext + ciphertext + base64 intermediate
 binary string + hex helpers all alive simultaneously).
