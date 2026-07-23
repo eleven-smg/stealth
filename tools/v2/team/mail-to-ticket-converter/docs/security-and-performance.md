@@ -12,6 +12,7 @@ The Mail-to-Ticket Converter processes data derived from external emails. Emails
 ## Validation & Sanitization Helpers
 
 The tool includes a dedicated `services/guards.ts` module providing:
+
 - `sanitizeAndValidateString`: Trims whitespace, strips `<script>` tags, and enforces maximum lengths.
 - `validateArraySize`: Prevents processing extremely large arrays that could block the event loop.
 
@@ -22,4 +23,4 @@ These helpers are invoked inside the core `mail-to-ticket-service.ts` logic to e
 1. **Large Emails and Attachments**: Rendering and parsing massive email threads can cause browser stutter or memory bloat. The conversion service limits the description length to avoid propagating excessively large text blocks to the ticket provider. Attachments (if added in the future) should be lazily loaded or size-capped.
 2. **Large Teams**: Fetching a massive list of assignable team members might impact UI performance. For teams >1000 members, the future UI integration should rely on paginated searches or debounced autocompletes instead of rendering full dropdowns.
 3. **Metric Calculations**: The `computeMetrics` function runs in `O(N)` time relative to the number of tickets. While acceptable for a small tool or limited local state, pulling a massive historical ticket list directly into the client will block the main thread. Future backend integration should handle metric aggregation on the server.
-4. **Pagination**: Currently, `getEmails()` and `getTickets()` return full mock datasets. Any future adapter connecting to the live inbox API *must* enforce server-side pagination and return bounded responses.
+4. **Pagination**: Currently, `getEmails()` and `getTickets()` return full mock datasets. Any future adapter connecting to the live inbox API _must_ enforce server-side pagination and return bounded responses.
