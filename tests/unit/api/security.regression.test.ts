@@ -1,16 +1,13 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { Route as PolicyRoute } from "../../../src/routes/api/v1/policies/$owner";
-import { Route as SenderRuleRoute } from "../../../src/routes/api/v1/policies/$owner/senders/$sender";
 import { ACTOR_HEADER } from "../../../src/server/api/actor";
 import { getApiContext } from "../../../src/server/api/context";
 import { MemoryApiRepository } from "../../../src/server/api/memory-repository";
 
 const owner = `G${"A".repeat(55)}`;
 const attacker = `G${"B".repeat(55)}`;
-const sender = `G${"C".repeat(55)}`;
 
 const updatePolicyHandler = (PolicyRoute.options as any).server?.handlers?.PUT;
-const updateSenderRuleHandler = (SenderRuleRoute.options as any).server?.handlers?.PUT;
 
 function updatePolicyRequest(actor?: string, headers: Record<string, string> = {}) {
   const reqHeaders: Record<string, string> = {
@@ -49,7 +46,7 @@ describe("API Security Regressions (#1555)", () => {
       });
       // The current model trusts the header, but a signed model will reject this.
       // This test is expected to fail (return 200) until the security fix is implemented.
-      expect(response.status).not.toBe(200); 
+      expect(response.status).not.toBe(200);
     });
 
     it.fails("replayed signatures fail", async () => {
@@ -57,9 +54,9 @@ describe("API Security Regressions (#1555)", () => {
         [ACTOR_HEADER]: owner,
         "x-stealth-nonce": "nonce123",
         "x-stealth-timestamp": new Date().toISOString(),
-        "x-stealth-signature": "sig123"
+        "x-stealth-signature": "sig123",
       };
-      
+
       const firstResponse = await updatePolicyHandler({
         request: updatePolicyRequest(owner, validHeaders),
         params: { owner },
@@ -81,9 +78,9 @@ describe("API Security Regressions (#1555)", () => {
         [ACTOR_HEADER]: owner,
         "x-stealth-nonce": "nonce456",
         "x-stealth-timestamp": new Date().toISOString(),
-        "x-stealth-signature": "sig_for_different_request"
+        "x-stealth-signature": "sig_for_different_request",
       };
-      
+
       const response = await updatePolicyHandler({
         request: updatePolicyRequest(owner, validHeaders),
         params: { owner },
