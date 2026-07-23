@@ -10,6 +10,7 @@
  * All functions throw ValidationError or SecurityError on failure.
  */
 
+// @ts-ignore
 import DOMPurify from "isomorphic-dompurify";
 
 // ============================================================================
