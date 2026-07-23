@@ -5,6 +5,7 @@ import {
   OpenEnvelopeError,
   type KeyProvider,
 } from "../../../src/services/crypto/open-envelope";
+import { createCommitment } from "../../../src/services/crypto/commitment";
 
 function toBase64(bytes: Uint8Array): string {
   let binary = "";
@@ -25,9 +26,7 @@ async function buildEnvelope(body: string, key: CryptoKey, recipient: string) {
   const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext));
   const tag = ct.slice(ct.length - 16);
   const ciphertextWithTag = ct; // GCM output already includes the tag
-  const commitment = toHex(
-    new Uint8Array(await crypto.subtle.digest("SHA-256", ciphertextWithTag)),
-  );
+  const commitment = await createCommitment(ciphertextWithTag);
   return {
     payload: {
       version: "v1",

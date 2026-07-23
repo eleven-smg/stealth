@@ -8,6 +8,7 @@
  */
 
 import { getCryptoTestVectors } from "./testing";
+import { createCommitment } from "./commitment";
 
 export interface EnvelopeAttachment {
   filename: string;
@@ -180,7 +181,7 @@ export async function sealEnvelope(input: SealEnvelopeInput): Promise<SealedEnve
       nonce: toHex(iv),
       mac: toHex(tag),
     },
-    content_commitment: await sha256Hex(ciphertext),
+    content_commitment: await createCommitment(ciphertext),
     attachments,
   };
 

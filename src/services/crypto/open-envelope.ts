@@ -13,6 +13,8 @@
  * unwraps it), keeping this module self-contained and independently mergeable.
  */
 
+import { verifyCommitment } from "./commitment";
+
 /** Minimal non-secret error carrying a stable code (no key/plaintext leakage). */
 export class OpenEnvelopeError extends Error {
   readonly code:
@@ -167,10 +169,17 @@ export async function openEnvelope(
     throw new OpenEnvelopeError("ciphertext shorter than auth tag", "crypto_integrity_error");
   }
 
-  // 2) Content commitment: SHA-256 of the full ciphertext (with tag) must match.
-  const computedCommitment = await sha256Hex(ciphertext);
-  if (computedCommitment !== commitment) {
-    throw new OpenEnvelopeError("content commitment mismatch", "crypto_integrity_error");
+  // 2) Content commitment: Parse and verify versioned format.
+  try {
+    await verifyCommitment(commitment, ciphertext);
+  } catch (err) {
+    if (err instanceof Error) {
+      if (err.message.includes("mismatch") || err.message.includes("crypto_commitment_error")) {
+        throw new OpenEnvelopeError("content commitment mismatch", "crypto_integrity_error");
+      }
+      throw new OpenEnvelopeError(err.message, "crypto_validation_error");
+    }
+    throw new OpenEnvelopeError("content commitment verification failed", "crypto_integrity_error");
   }
 
   // 3) Recompute and compare the auth tag against the declared mac.
