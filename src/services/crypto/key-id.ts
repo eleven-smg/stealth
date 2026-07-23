@@ -53,7 +53,7 @@ export async function deriveKeyId(publicKey: Uint8Array): Promise<string> {
     throw new CryptoError("crypto_key_error", "Public key bytes cannot be empty");
   }
 
-  const hashBuffer = await crypto.subtle.digest("SHA-256", publicKey);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", publicKey as BufferSource);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   return `kid_${hex}`;
