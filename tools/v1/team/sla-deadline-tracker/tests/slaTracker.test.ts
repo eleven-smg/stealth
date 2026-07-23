@@ -1,16 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  computeDeadline,
-  evaluateSla,
-  summarizeSla,
-} from "../services/slaTracker";
+import { computeDeadline, evaluateSla, summarizeSla } from "../services/slaTracker";
 import type { SlaPolicy, SlaTrackedItem } from "../types";
-import {
-  FIXED_NOW,
-  SAMPLE_ITEMS,
-  STANDARD_SLA_POLICY,
-} from "../fixtures/sla.fixture";
+import { FIXED_NOW, SAMPLE_ITEMS, STANDARD_SLA_POLICY } from "../fixtures/sla.fixture";
 
 const policy: SlaPolicy = STANDARD_SLA_POLICY;
 
@@ -29,7 +21,11 @@ function item(overrides: Partial<SlaTrackedItem>): SlaTrackedItem {
 describe("evaluateSla (#450)", () => {
   it("marks an already-responded item as responded regardless of deadline", () => {
     const ev = evaluateSla(
-      item({ responded: true, respondedAt: new Date(FIXED_NOW).toISOString(), deadlineAt: new Date(FIXED_NOW - 1000).toISOString() }),
+      item({
+        responded: true,
+        respondedAt: new Date(FIXED_NOW).toISOString(),
+        deadlineAt: new Date(FIXED_NOW - 1000).toISOString(),
+      }),
       policy,
       FIXED_NOW,
     );

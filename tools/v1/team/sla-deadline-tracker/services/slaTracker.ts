@@ -6,13 +6,7 @@
  * Time is injected (`now`) so evaluations are reproducible in tests.
  */
 
-import type {
-  SlaEvaluation,
-  SlaPolicy,
-  SlaStatus,
-  SlaSummary,
-  SlaTrackedItem,
-} from "../types";
+import type { SlaEvaluation, SlaPolicy, SlaStatus, SlaSummary, SlaTrackedItem } from "../types";
 
 // (re-export for convenience; kept local to this folder)
 export type { SlaTrackedItem, SlaPolicy, SlaEvaluation, SlaSummary, SlaStatus };
@@ -34,11 +28,7 @@ function finiteOrZero(ms: number): number {
  *     0 <= remaining < warn    -> "due-soon"
  *     remaining >= warn        -> "on-track"
  */
-export function evaluateSla(
-  item: SlaTrackedItem,
-  policy: SlaPolicy,
-  now: number,
-): SlaEvaluation {
+export function evaluateSla(item: SlaTrackedItem, policy: SlaPolicy, now: number): SlaEvaluation {
   if (item.responded) {
     return {
       itemId: item.id,

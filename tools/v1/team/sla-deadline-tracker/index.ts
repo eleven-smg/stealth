@@ -5,16 +5,6 @@
  * core engine decoupled from the main application.
  */
 
-export type {
-  SlaTrackedItem,
-  SlaPolicy,
-  SlaEvaluation,
-  SlaSummary,
-  SlaStatus,
-} from "./types";
+export type { SlaTrackedItem, SlaPolicy, SlaEvaluation, SlaSummary, SlaStatus } from "./types";
 
-export {
-  evaluateSla,
-  summarizeSla,
-  computeDeadline,
-} from "./services/slaTracker";
+export { evaluateSla, summarizeSla, computeDeadline } from "./services/slaTracker";
