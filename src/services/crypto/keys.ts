@@ -180,4 +180,4 @@ export function importVerificationKey(raw: Uint8Array): Promise<CryptoKey> {
     false,
     [...KEY_USAGES.verify],
   );
-}
+                       }
